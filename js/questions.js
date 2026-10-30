@@ -11,8 +11,8 @@ window.QUESTIONS = [
     { value: "play", label: "놀이에 흥분하거나 깨물기를 따라 했어요", scores: {play: 3} },
     { value: "unknown", label: "잘 모르겠어요", scores: {} }
   ]},
-  { id: "q-target", title: "누구를 깨물었나요?", source: "CHLA 1쪽; Head Start 웹 자료", options: [
-    { value: "peer", label: "친구", scores: {} }, { value: "sibling", label: "형제자매", scores: {} },
+  { id: "q-target", title: "누구를 깨물었나요?", source: "친구: 보육교사 지침서 p.227~229 놀잇감 다툼 사례; 형제자매: 2023년 양육상담 자료집 p.17 동생이 태어나고 아이가 거칠게 행동해요", options: [
+    { value: "peer", label: "친구", scores: {frustration: 1} }, { value: "sibling", label: "형제자매", scores: {change: 2} },
     { value: "adult", label: "보호자·어른", scores: {} }, { value: "unknown", label: "잘 모르겠어요", scores: {} }
   ]},
   { id: "q-context", title: "어디에서 일어났나요?", source: "CHLA 1쪽: 주변 상황·시끄러움 관찰", options: [

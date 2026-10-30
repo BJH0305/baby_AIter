@@ -265,6 +265,13 @@ function renderLog() {
   const inspections = getInspections();
   document.getElementById("logContent").innerHTML = inspections.length ? inspections.map(inspectionRow).join("") : '<div class="empty"><p>아직 검사 기록이 없어요</p><button class="btn btn-secondary" data-start-quiz>검사 시작하기</button></div>';
 }
+// 원문 데이터는 유지하고 대응 문장의 대상 표현만 선택 답변에 맞춘다.
+function displayTip(text, input) {
+  const target = input.answers?.["q-target"];
+  if (target === "peer") return text;
+  if (target === "sibling") return text.replace(/친구/g, "동생");
+  return text.replace(/친구(?:에게|한테|의|가|를|와|는|도)?\s*/g, "").replace(/ {2,}/g, " ").trim();
+}
 // 첫 화면에는 요약만 표시하고, 선택 답변·AI 설명·원문 근거는 접어 둔다.
 function renderCauseResult(container, consult) {
   const answer = applySafety(consult.answer, consult.input);
@@ -278,7 +285,7 @@ function renderCauseResult(container, consult) {
     // AI가 쓴 이유를 먼저 보여 주고, 없는 경우 카드의 전체 설명을 사용한다.
     const hasAI = consult.source === "ai" && typeof candidate.why === "string" && candidate.why.trim().length > 0;
     const explanation = hasAI ? candidate.why : card.explain;
-    return `<article class="section card cause-card"><h2 class="title-md">${esc(card.title)}</h2>${hasAI ? '<p class="label">우리 아이 답변으로 본 이유</p>' : ""}<p class="cause-summary">${esc(explanation)}</p><div class="cause-tips"><b>이럴 땐 이렇게</b><ul>${card.tips.map((tip) => `<li>${esc(tip.text)}</li>`).join("")}</ul></div><details><summary>근거 보기</summary><div class="evidence-body">${hasAI ? `<p>${esc(card.explain)}</p>` : ""}<p>선택한 답변: ${esc(selected)}</p><p class="muted source-text">${esc(displaySource(card))}</p>${sourceLink(card)}<blockquote>${esc(card.evidence)}</blockquote>${card.verified === false ? '<span class="badge">검수 중</span>' : ""}</div></details></article>`;
+    return `<article class="section card cause-card"><h2 class="title-md">${esc(card.title)}</h2>${hasAI ? '<p class="label">우리 아이 답변으로 본 이유</p>' : ""}<p class="cause-summary">${esc(explanation)}</p><div class="cause-tips"><b>이럴 땐 이렇게</b><ul>${card.tips.map((tip) => `<li>${esc(displayTip(tip.text, consult.input))}</li>`).join("")}</ul></div><details><summary>근거 보기</summary><div class="evidence-body">${hasAI ? `<p>${esc(card.explain)}</p>` : ""}<p>선택한 답변: ${esc(selected)}</p><p class="muted source-text">${esc(displaySource(card))}</p>${sourceLink(card)}<blockquote>${esc(card.evidence)}</blockquote>${card.verified === false ? '<span class="badge">검수 중</span>' : ""}</div></details></article>`;
   }).join("") : '<div class="section empty"><p>답변만으로 원인 후보를 좁히기 어려워요.</p><p>관찰 내용을 확인하고 다시 답해 주세요.</p></div>') + `<div class="section card"><h2 class="title-md">결과가 맞았나요?</h2><div class="chips" role="group" aria-label="결과 피드백">${Object.entries(feedbackLabels).map(([value, label]) => `<button type="button" class="chip ${consult.feedbackResult === value ? "on" : ""}" aria-pressed="${consult.feedbackResult === value}" data-cause-feedback="${value}" data-inspection="${esc(consult.id)}">${label}</button>`).join("")}</div></div><a class="btn btn-secondary btn-block" href="#ask">답변 다시 살펴보기</a><a class="btn btn-ghost btn-block" href="#log">검사 기록 보기</a>`;
 }
 // 한 탭으로 검사별 피드백을 갱신한다. 이전 지도법 피드백과 섞지 않는다.
