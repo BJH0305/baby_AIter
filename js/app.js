@@ -389,7 +389,7 @@ const quizOtherAnswers = {};
 function isQuizAnswered(q) { return Boolean(quizAnswers[q.id]) && (quizAnswers[q.id] !== "other" || Boolean(quizOtherAnswers[q.id]?.trim())); }
 function getQuizInput() {
   const selected = (id) => window.QUESTIONS.find((q) => q.id === id)?.options.find((o) => o.value === quizAnswers[id])?.label || "";
-  return { answers: { ...quizAnswers }, otherAnswers: { ...quizOtherAnswers }, target: selected("q-target"), situation: selected("q-situation"), text: document.getElementById("askText").value.trim(), ageMonths: getProfile().ageMonths };
+  return { answers: { ...quizAnswers }, otherAnswers: Object.fromEntries(Object.entries(quizOtherAnswers).filter(([id]) => quizAnswers[id] === "other")), target: selected("q-target"), situation: selected("q-situation"), text: document.getElementById("askText").value.trim(), ageMonths: getProfile().ageMonths };
 }
 function renderQuiz() {
   const questions = window.QUESTIONS, question = questions[quizIndex], done = !question;
