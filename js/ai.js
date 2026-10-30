@@ -32,9 +32,14 @@ function buildPrompt(input, cards, history) {
   ].join("\n");
 }
 
-// 피드백 유무에 따라 시연용 답변을 선택한다.
+// 일치하는 카드가 없으면 기본 카드를 사용한다.
+function getConsultCards(input) {
+  const cards = searchCards(input);
+  return cards.length ? cards : window.KNOWLEDGE.filter((card) => card.id === "bite-basic");
+}
+// 검색된 근거로 규칙 기반 답변을 만든다.
 async function askAI(input, history = null) {
-  const answer = history && Array.isArray(history.feedback) && history.feedback.length ? MOCK.second : MOCK.first;
-  return new Promise((resolve) => setTimeout(() => resolve(structuredClone(answer)), 1000));
+  const cards = getConsultCards(input);
+  return new Promise((resolve) => setTimeout(() => resolve(ruleAnswer(input, cards, history)), 1000));
 }
 

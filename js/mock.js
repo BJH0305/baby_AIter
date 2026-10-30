@@ -1,19 +1,30 @@
-// 시연 답변은 지식 카드에 적힌 문장을 그대로 사용한다.
-const siblingCard = window.KNOWLEDGE.find((card) => card.id === "bite-sibling");
-const basicCard = window.KNOWLEDGE.find((card) => card.id === "bite-basic");
-function mockMethod(id, card, index) {
-  return { id, title: card.methods[index], how: card.methods[index], why: card.causes[0], cardId: card.id };
-}
-const MOCK = {
-  first: {
-    causes: [siblingCard.causes[0], basicCard.causes[0]],
-    methods: [mockMethod("m1", siblingCard, 0), mockMethod("m2", basicCard, 0), mockMethod("m3", siblingCard, 1)],
-    level: "green", note: "", changes: null
-  },
-  second: {
-    causes: [siblingCard.causes[0], basicCard.causes[0]],
-    methods: [mockMethod("m1", siblingCard, 0), mockMethod("m4", basicCard, 2), mockMethod("m3", siblingCard, 1)],
-    level: "green", note: "",
-    changes: { kept: ["m1"], replaced: [{ from: "m2", to: "m4" }], summary: siblingCard.methods[0] + " / " + basicCard.methods[2] }
+// 근거 카드의 방법을 번갈아 고르고 피드백에 따라 유지·교체한다.
+function ruleAnswer(input, cards, history = null) {
+  const candidates = [];
+  const max = Math.max(0, ...cards.map((card) => card.methods.length));
+  for (let i = 0; i < max; i++) for (const card of cards) {
+    if (card.methods[i]) candidates.push({ id: `${card.id}-${i}`, title: card.methods[i], how: card.methods[i], why: card.causes[0] || "", cardId: card.id });
   }
-};
+  const feedback = history?.feedback || [], previous = history?.previous?.methods || [];
+  const latest = new Map();
+  for (const item of feedback) if (!latest.has(item.methodId)) latest.set(item.methodId, item.result);
+  const used = new Set(previous.map((method) => method.id));
+  const kept = [], replaced = [], methods = [];
+  for (const old of previous) {
+    const candidate = candidates.find((item) => item.id === old.id);
+    if ((latest.get(old.id) === "good" || latest.get(old.id) === "some") && candidate && methods.length < 3) { methods.push(candidate); kept.push(candidate.id); }
+  }
+  for (const old of previous) {
+    if (latest.get(old.id) !== "none") continue;
+    const replacement = candidates.find((item) => !used.has(item.id));
+    if (replacement && methods.length < 3) { methods.push(replacement); used.add(replacement.id); replaced.push({ from: old.id, to: replacement.id }); }
+  }
+  for (const candidate of candidates) {
+    if (methods.length >= 3) break;
+    if (!methods.some((method) => method.id === candidate.id) && latest.get(candidate.id) !== "none") methods.push(candidate);
+  }
+  const descriptions = [];
+  if (kept.length) descriptions.push(`효과 있던 ${methods.find((method) => method.id === kept[0]).title}는 유지해요`);
+  if (replaced.length) descriptions.push(`${previous.find((method) => method.id === replaced[0].from)?.title || "기존 방법"} 대신 ${methods.find((method) => method.id === replaced[0].to).title}를 제안해요`);
+  return { causes: [...new Set(cards.map((card) => card.causes[0]).filter(Boolean))].slice(0, 2), methods: methods.slice(0, 3), level: "green", note: "", changes: feedback.length ? { kept, replaced, summary: descriptions.join(". ") } : null };
+}

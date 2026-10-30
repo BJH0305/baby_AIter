@@ -31,11 +31,11 @@ function demoData() {
   const input = { target: "동생", situation: "동생을 안고 있을 때", text: "", ageMonths: 38 };
   return {
     profile: { name: "도윤", ageMonths: 38, hasSibling: true },
-    consults: [{ id: "c_demo", createdAt: "2026-10-27", round: 1, parentId: null, input, cardIds: ["bite-sibling", "bite-basic"], answer: structuredClone(MOCK.first), tried: ["m1", "m2"] }],
+    consults: [{ id: "c_demo", createdAt: "2026-10-27", round: 1, parentId: null, input, cardIds: getConsultCards(input).map((card) => card.id), answer: ruleAnswer(input, getConsultCards(input)), tried: ["bite-sibling-0", "bite-basic-0"] }],
     feedback: [
-      { id: "f_demo3", consultId: "c_demo", methodId: "m1", date: "2026-10-29", result: "good", memo: "" },
-      { id: "f_demo2", consultId: "c_demo", methodId: "m2", date: "2026-10-28", result: "none", memo: "" },
-      { id: "f_demo1", consultId: "c_demo", methodId: "m1", date: "2026-10-27", result: "good", memo: "" }
+      { id: "f_demo3", consultId: "c_demo", methodId: "bite-sibling-0", date: "2026-10-29", result: "good", memo: "" },
+      { id: "f_demo2", consultId: "c_demo", methodId: "bite-basic-0", date: "2026-10-28", result: "none", memo: "" },
+      { id: "f_demo1", consultId: "c_demo", methodId: "bite-sibling-0", date: "2026-10-27", result: "good", memo: "" }
     ]
   };
 }
@@ -43,7 +43,21 @@ function demoData() {
 function loadData() {
   try {
     const data = JSON.parse(localStorage.getItem("babyaiter-v1"));
-    if (data && data.profile && Array.isArray(data.consults) && Array.isArray(data.feedback)) return data;
+    if (data && data.profile && Array.isArray(data.consults) && Array.isArray(data.feedback)) {
+      // 기존 시연 기록의 예전 ID를 카드 ID로 바꿔 기록을 유지한다.
+      for (const consult of data.consults) {
+        for (const method of consult.answer?.methods || []) {
+          const card = window.KNOWLEDGE.find((item) => item.id === method.cardId);
+          const index = card?.methods.indexOf(method.title) ?? -1;
+          if (!/^m\d+$/.test(method.id) || index < 0) continue;
+          const oldId = method.id, newId = `${card.id}-${index}`;
+          method.id = newId;
+          consult.tried = (consult.tried || []).map((id) => id === oldId ? newId : id);
+          data.feedback.filter((entry) => entry.consultId === consult.id && entry.methodId === oldId).forEach((entry) => { entry.methodId = newId; });
+        }
+      }
+      return data;
+    }
   } catch {}
   return demoData();
 }
@@ -201,7 +215,7 @@ async function reconsult(button) {
   try {
     const answer = applySafety(await askAI(previous.input, history), previous.input, feedback);
     const id = `c_${Date.now()}`;
-    data.consults.unshift({ id, createdAt: new Date().toISOString().slice(0, 10), round: 2, parentId: previous.id, input: previous.input, cardIds: [...new Set(answer.methods.map((method) => method.cardId))], answer, tried: [] });
+    data.consults.unshift({ id, createdAt: new Date().toISOString().slice(0, 10), round: 2, parentId: previous.id, input: previous.input, cardIds: getConsultCards(previous.input).map((card) => card.id), answer, tried: [] });
     if (!saveData(data)) throw new Error("저장 실패");
     currentConsultId = id;
     location.hash = "#result";
@@ -369,7 +383,7 @@ document.getElementById("askForm")?.addEventListener("submit", async (event) => 
     pendingConsult = { input, answer: applySafety(await askAI(input), input) };
     const data = loadData();
     const id = `c_${Date.now()}`;
-    const cardIds = [...new Set(pendingConsult.answer.methods.map((method) => method.cardId))];
+    const cardIds = getConsultCards(input).map((card) => card.id);
     data.consults.unshift({ id, createdAt: new Date().toISOString().slice(0, 10), round: 1, parentId: null, input, cardIds, answer: pendingConsult.answer, tried: [] });
     if (!saveData(data)) throw new Error("저장 실패");
     currentConsultId = id;
