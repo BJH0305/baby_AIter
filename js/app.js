@@ -277,7 +277,7 @@ function renderCauseResult(container, consult) {
   const safety = answer.level === "red" ? '<div class="section card" role="alert"><h2 class="title-md">전문가 상담 권장</h2><p>먼저 물린 사람의 안전과 상처를 확인해 주세요. 육아종합지원센터 또는 소아청소년과에 상담해 보세요.</p></div>' : "";
   const targetSummary = {peer: "친구를 깨물었을 때", sibling: "형제자매를 깨물었을 때", adult: "보호자·어른을 깨물었을 때"}[consult.input.answers?.["q-target"]] || "깨물기 상황";
   const inputSummary = `${consult.input.ageMonths}개월 · ${targetSummary}`;
-  container.innerHTML = `${safety}<p class="section muted">${esc(inputSummary)}</p><div class="section"><p>가능성이 높은 원인 후보예요. 진단이 아니에요.</p><details class="muted result-note"><summary>안내 더보기</summary><p>여러 이유가 겹칠 수 있으며, 동점 후보의 순서는 가능성 차이를 뜻하지 않아요.</p></details><span class="badge">${consult.source === "ai" ? "AI 설명" : "기본 설명"}</span></div>` + (answer.candidates.length ? answer.candidates.map((candidate) => {
+  container.innerHTML = `${safety}<p class="section muted">${esc(inputSummary)}</p><div class="section"><p>가능성이 높은 원인 후보예요. 진단이 아니에요.</p><p class="muted result-note">원인은 여러 개가 함께 있을 수 있어요. 위에 있다고 더 확실한 건 아니에요.</p><span class="badge">${consult.source === "ai" ? "AI 설명" : "기본 설명"}</span></div>` + (answer.candidates.length ? answer.candidates.map((candidate) => {
     const card = window.KNOWLEDGE.find((c) => c.id === candidate.cardId);
     if (!card) return "";
     const selected = scoreCauses(consult.input).find((c) => c.cardId === card.id)?.reasons.join(" / ") || "[확인 필요]";
