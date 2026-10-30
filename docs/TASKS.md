@@ -109,3 +109,6 @@
 
   - 결정(사용자): A 승인. Claude의 SCOPE.md 팀 결정도 커밋에 포함. 화면은 개월 수로만, tips 배열에는 같은 근거 PDF의 대응과 줄별 쪽수를 기록.
   - 메모(T22 후속): js/knowledge.js, js/app.js, js/ai.js, index.html, css/styles.css, docs/sources/cards.md / 7개 원인별 2~3개 대응·PDF 원문 대조·화면 및 안전 통합 검사 통과 / Pages 확인 완료: 홈·질문 개월 수, 대응 목록·각 줄 쪽수, 375px 가로 넘침 없음·콘솔 오류 0; 사람 카드 검수는 미완료 유지.
+
+- [x] F0. 원인 7개 팀원 검수 완료 반영
+  - 메모: verified true 7개, 카드 확인 완료 7개; 발행기관 미확인 유지

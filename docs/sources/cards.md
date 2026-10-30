@@ -50,7 +50,7 @@
 - 출처: CHLA Early Connections Program - 아야! 아기가 물면 어떻게 해야 할까요? - 로컬 01_biting_onesheet_2025.pdf (공개 원문 URL [확인 필요]); 보조: 미국 Head Start - Biting: A Fact Sheet for Families - https://headstart.gov/mental-health/article/biting-fact-sheet-families (웹, 쪽수 없음)
 - 쪽수: 1쪽(PDF 1쪽)
 - 근거 문장 (페이지에 실제로 있는 문장 그대로, 40자 이내): 이가 나느라 잇몸이 아파서
-- 확인: 미완료
+- 확인: 완료
 
 ### 카드: 좌절·표현 부족
 - 연령: 24~47개월 (연령별 적용 범위 [확인 필요])
@@ -72,7 +72,7 @@
 - 출처: 보건복지부·육아정책연구소 - 영유아 문제행동지도를 위한 어린이집 보육교사 지침서 2 - 로컬 06_2013_problem_behavior_teacher_guide2.pdf (공개 원문 URL [확인 필요]); 보조: 미국 Head Start - Biting: A Fact Sheet for Families - https://headstart.gov/mental-health/article/biting-fact-sheet-families (웹, 쪽수 없음)
 - 쪽수: 인쇄 227~229쪽(PDF 29~31쪽)
 - 근거 문장 (페이지에 실제로 있는 문장 그대로, 40자 이내): 놀잇감을 가져가지 못하게 하는 적절한 방법을 모름
-- 확인: 미완료
+- 확인: 완료
 
 ### 카드: 관심 끌기
 - 연령: 24~47개월 (연령별 적용 범위 [확인 필요])
@@ -94,7 +94,7 @@
 - 출처: 경기도북부육아종합지원센터 - 영아 행동유형별 지도사례 - 로컬 05_2023_infant_behavior_guide_cases.pdf (공개 원문 URL [확인 필요]); 보조: 미국 Head Start - Biting: A Fact Sheet for Families - https://headstart.gov/mental-health/article/biting-fact-sheet-families (웹, 쪽수 없음)
 - 쪽수: 인쇄 42~43쪽(PDF 22쪽); 보조 CHLA 1쪽
 - 근거 문장 (페이지에 실제로 있는 문장 그대로, 40자 이내): 정서적으로 불안한 경우에 성인의 관심을 끌어내기 위해서
-- 확인: 미완료
+- 확인: 완료
 
 ### 카드: 환경 변화·스트레스
 - 연령: 24~47개월 (연령별 적용 범위 [확인 필요])
@@ -116,7 +116,7 @@
 - 출처: 2023년 양육상담 자료집 해 볼 만한 고민 해 볼 만한 양육 - 동생이 태어나고 아이가 거칠게 행동해요 (발행기관 [확인 필요]) - 로컬 04_2023_online_counsel_problem_behavior.pdf (공개 원문 URL [확인 필요]); 보조: 미국 Head Start - Biting: A Fact Sheet for Families - https://headstart.gov/mental-health/article/biting-fact-sheet-families (웹, 쪽수 없음)
 - 쪽수: 인쇄 17쪽(PDF 4쪽)
 - 근거 문장 (페이지에 실제로 있는 문장 그대로, 40자 이내): 동생이 태어나고 아이가 거칠게 행동해요
-- 확인: 미완료
+- 확인: 완료
 
 ### 카드: 독립·통제 욕구
 - 연령: 24~47개월 (연령별 적용 범위 [확인 필요])
@@ -138,7 +138,7 @@
 - 출처: 2023년 양육상담 자료집 해 볼 만한 고민 해 볼 만한 양육 - 아이에게 훈육을 하는게 맞을까요? (발행기관 [확인 필요]) - 로컬 03_2023_online_counsel_parenting_style.pdf (공개 원문 URL [확인 필요]); 보조: 미국 Head Start - Biting: A Fact Sheet for Families - https://headstart.gov/mental-health/article/biting-fact-sheet-families (웹, 쪽수 없음)
 - 쪽수: 인쇄 51쪽(PDF 4쪽)
 - 근거 문장 (페이지에 실제로 있는 문장 그대로, 40자 이내): 24개월경부터는 언어 표현이 증가하고 자율성이 생기면서
-- 확인: 미완료
+- 확인: 완료
 
 ### 카드: 또래 놀이 학습
 - 연령: 24~47개월 (연령별 적용 범위 [확인 필요])
@@ -160,7 +160,7 @@
 - 출처: CHLA Early Connections Program - 아야! 아기가 물면 어떻게 해야 할까요? - 로컬 01_biting_onesheet_2025.pdf (공개 원문 URL [확인 필요]); 보조: 미국 Head Start - Biting: A Fact Sheet for Families - https://headstart.gov/mental-health/article/biting-fact-sheet-families (웹, 쪽수 없음); 영국 NHS - Advice for Parents (0-5 Years), Biting - https://www.startingwell.org.uk/advice-for-parents-0to5 (웹, 쪽수 없음)
 - 쪽수: 1쪽(PDF 1쪽)
 - 근거 문장 (페이지에 실제로 있는 문장 그대로, 40자 이내): 흥분하거나 기운이 넘쳐서
-- 확인: 미완료
+- 확인: 완료
 
 ### 카드: 피로·컨디션
 - 연령: 24~47개월 (연령별 적용 범위 [확인 필요])
@@ -180,4 +180,6 @@
 - 출처: CHLA Early Connections Program - 아야! 아기가 물면 어떻게 해야 할까요? - 로컬 01_biting_onesheet_2025.pdf (공개 원문 URL [확인 필요]); 보조: 미국 Head Start - Biting: A Fact Sheet for Families - https://headstart.gov/mental-health/article/biting-fact-sheet-families (웹, 쪽수 없음); 미국 Virtual Lab School - Considering Behavior - https://static.virtuallabschool.org/atmt/guidance/IT.Guidance_2.InfantsToddlers_E1.ConsideringBehavior.pdf (1쪽)
 - 쪽수: 1쪽(PDF 1쪽)
 - 근거 문장 (페이지에 실제로 있는 문장 그대로, 40자 이내): 아이가 피곤한가요?
-- 확인: 미완료
+- 확인: 완료
+
+- F0: 한서희가 원인 7개 내용 검수 완료, 수정 없이 승인. 발행기관 미확인 표기는 유지.

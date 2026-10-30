@@ -39,7 +39,7 @@ window.KNOWLEDGE = [
     "source": "CHLA Early Connections Program - 아야! 아기가 물면 어떻게 해야 할까요? - 로컬 01_biting_onesheet_2025.pdf (공개 원문 URL [확인 필요]); 보조: 미국 Head Start - Biting: A Fact Sheet for Families - https://headstart.gov/mental-health/article/biting-fact-sheet-families (웹, 쪽수 없음)",
     "page": "1쪽(PDF 1쪽)",
     "evidence": "이가 나느라 잇몸이 아파서",
-    "verified": false,
+    "verified": true,
     "tips": [
       {
         "text": "깨물기 전후에 어떤 일이 있었는지, 아이의 기분과 주변 상황을 살펴봐 주세요.",
@@ -92,7 +92,7 @@ window.KNOWLEDGE = [
     "source": "보건복지부·육아정책연구소 - 영유아 문제행동지도를 위한 어린이집 보육교사 지침서 2 - 로컬 06_2013_problem_behavior_teacher_guide2.pdf (공개 원문 URL [확인 필요]); 보조: 미국 Head Start - Biting: A Fact Sheet for Families - https://headstart.gov/mental-health/article/biting-fact-sheet-families (웹, 쪽수 없음)",
     "page": "인쇄 227~229쪽(PDF 29~31쪽)",
     "evidence": "놀잇감을 가져가지 못하게 하는 적절한 방법을 모름",
-    "verified": false,
+    "verified": true,
     "tips": [
       {
         "text": "“친구가 놀잇감을 만지는 게 싫었구나”처럼 아이의 마음을 읽어 주세요.",
@@ -150,7 +150,7 @@ window.KNOWLEDGE = [
     "source": "경기도북부육아종합지원센터 - 영아 행동유형별 지도사례 - 로컬 05_2023_infant_behavior_guide_cases.pdf (공개 원문 URL [확인 필요]); 보조: 미국 Head Start - Biting: A Fact Sheet for Families - https://headstart.gov/mental-health/article/biting-fact-sheet-families (웹, 쪽수 없음)",
     "page": "인쇄 42~43쪽(PDF 22쪽); 보조 CHLA 1쪽",
     "evidence": "정서적으로 불안한 경우에 성인의 관심을 끌어내기 위해서",
-    "verified": false,
+    "verified": true,
     "tips": [
       {
         "text": "평소 긍정적인 상호작용으로 아이에게 관심을 보여 주세요.",
@@ -208,7 +208,7 @@ window.KNOWLEDGE = [
     "source": "2023년 양육상담 자료집 해 볼 만한 고민 해 볼 만한 양육 - 동생이 태어나고 아이가 거칠게 행동해요 (발행기관 [확인 필요]) - 로컬 04_2023_online_counsel_problem_behavior.pdf (공개 원문 URL [확인 필요]); 보조: 미국 Head Start - Biting: A Fact Sheet for Families - https://headstart.gov/mental-health/article/biting-fact-sheet-families (웹, 쪽수 없음)",
     "page": "인쇄 17쪽(PDF 4쪽)",
     "evidence": "동생이 태어나고 아이가 거칠게 행동해요",
-    "verified": false,
+    "verified": true,
     "tips": [
       {
         "text": "무엇이 불만이고 화가 났는지 살펴보고 먼저 마음을 공감해 주세요.",
@@ -266,7 +266,7 @@ window.KNOWLEDGE = [
     "source": "2023년 양육상담 자료집 해 볼 만한 고민 해 볼 만한 양육 - 아이에게 훈육을 하는게 맞을까요? (발행기관 [확인 필요]) - 로컬 03_2023_online_counsel_parenting_style.pdf (공개 원문 URL [확인 필요]); 보조: 미국 Head Start - Biting: A Fact Sheet for Families - https://headstart.gov/mental-health/article/biting-fact-sheet-families (웹, 쪽수 없음)",
     "page": "인쇄 51쪽(PDF 4쪽)",
     "evidence": "24개월경부터는 언어 표현이 증가하고 자율성이 생기면서",
-    "verified": false,
+    "verified": true,
     "tips": [
       {
         "text": "아이가 스스로 해 볼 기회를 주고 지켜봐 주세요.",
@@ -324,7 +324,7 @@ window.KNOWLEDGE = [
     "source": "CHLA Early Connections Program - 아야! 아기가 물면 어떻게 해야 할까요? - 로컬 01_biting_onesheet_2025.pdf (공개 원문 URL [확인 필요]); 보조: 미국 Head Start - Biting: A Fact Sheet for Families - https://headstart.gov/mental-health/article/biting-fact-sheet-families (웹, 쪽수 없음); 영국 NHS - Advice for Parents (0-5 Years), Biting - https://www.startingwell.org.uk/advice-for-parents-0to5 (웹, 쪽수 없음)",
     "page": "1쪽(PDF 1쪽)",
     "evidence": "흥분하거나 기운이 넘쳐서",
-    "verified": false,
+    "verified": true,
     "tips": [
       {
         "text": "깨물 것 같은 징후가 보이면 장난감이나 새로운 활동으로 주의를 돌려 주세요.",
@@ -382,7 +382,7 @@ window.KNOWLEDGE = [
     "source": "CHLA Early Connections Program - 아야! 아기가 물면 어떻게 해야 할까요? - 로컬 01_biting_onesheet_2025.pdf (공개 원문 URL [확인 필요]); 보조: 미국 Head Start - Biting: A Fact Sheet for Families - https://headstart.gov/mental-health/article/biting-fact-sheet-families (웹, 쪽수 없음); 미국 Virtual Lab School - Considering Behavior - https://static.virtuallabschool.org/atmt/guidance/IT.Guidance_2.InfantsToddlers_E1.ConsideringBehavior.pdf (1쪽)",
     "page": "1쪽(PDF 1쪽)",
     "evidence": "아이가 피곤한가요?",
-    "verified": false,
+    "verified": true,
     "tips": [
       {
         "text": "수면·식사·놀이의 규칙적인 일정이나 일과를 유지해 주세요.",
