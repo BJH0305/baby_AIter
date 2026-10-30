@@ -14,7 +14,12 @@
   <div class="app">
     <section class="screen" data-screen="home">
       <header class="topbar"><h1>베이비 AI터</h1></header>
-      <main class="content"><h2 class="title-lg">홈</h2></main>
+      <main class="content">
+        <div class="section card"><h2 class="title-md">아이 프로필</h2><form id="profileForm"><div class="field"><label class="label" for="profileName">가명</label><input class="input" id="profileName" required maxlength="30" /></div><div class="field"><label class="label" for="profileAge">개월 수</label><input class="input" id="profileAge" type="number" min="1" max="120" required /></div><button class="btn btn-secondary" type="submit">저장</button></form></div>
+        <div class="section card"><h2 class="title-md">이번 주 시도한 지도법</h2><p id="weeklyCount"></p></div>
+        <div class="section"><h2 class="title-md">진행 중 상담</h2><div id="currentSummary"></div></div>
+        <div class="section"><h2 class="title-md">최근 기록</h2><div id="homeRecent"></div></div>
+      </main>
     </section>
     <section class="screen" data-screen="ask" hidden>
       <header class="topbar"><h1>상담하기</h1></header>

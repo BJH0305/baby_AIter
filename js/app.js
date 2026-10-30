@@ -110,6 +110,7 @@ let filter = "all";
 function render() {
   const age = document.getElementById("askAge");
   if (age) age.textContent = `아이 개월 수: ${getProfile().ageMonths}개월`;
+  renderHome();
   renderResult();
   const recent = document.getElementById("recentList");
   if (recent) recent.innerHTML = items.slice(0, 3).map(itemRow).join("");
@@ -123,6 +124,33 @@ function render() {
     if (empty) empty.hidden = shown.length !== 0;
   }
   refreshIcons();
+}
+
+// 홈은 저장된 프로필과 상담, 최근 피드백을 보여 준다.
+function renderHome() {
+  const data = loadData();
+  const name = document.getElementById("profileName");
+  const age = document.getElementById("profileAge");
+  if (!name || !age) return;
+  if (!document.getElementById("profileForm").contains(document.activeElement)) {
+    name.value = data.profile.name;
+    age.value = data.profile.ageMonths;
+  }
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+  const startDay = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}-${String(start.getDate()).padStart(2, "0")}`;
+  const weeklyMethods = new Set(data.feedback.filter((entry) => entry.date >= startDay).map((entry) => `${entry.consultId}:${entry.methodId}`));
+  document.getElementById("weeklyCount").textContent = `${weeklyMethods.size}개`;
+  const latest = data.consults[0];
+  document.getElementById("currentSummary").innerHTML = latest
+    ? `<div class="card"><p>${esc(latest.input.target)} · ${esc(latest.input.situation)}</p><button class="btn btn-secondary" data-consult="${esc(latest.id)}">결과 보기</button></div>`
+    : '<div class="empty"><p>진행 중인 상담이 없어요</p><a class="btn btn-secondary" href="#ask">상담하기</a></div>';
+  const recent = data.feedback.slice(0, 3);
+  const results = { good: "효과 있음", some: "조금", none: "없음" };
+  document.getElementById("homeRecent").innerHTML = recent.length
+    ? `<div class="list">${recent.map((entry) => `<div class="list-item"><div class="body"><div class="name">${esc(results[entry.result] || entry.result)}</div><div class="sub">${esc(entry.date)} · ${esc(entry.memo || "메모 없음")}</div></div></div>`).join("")}</div>`
+    : '<div class="empty"><p>아직 기록이 없어요</p><a class="btn btn-secondary" href="#log">기록 보기</a></div>';
 }
 
 // 현재 상담의 결과와 각 지도법의 출처를 표시한다.
@@ -177,6 +205,18 @@ document.addEventListener("click", (e) => {
     if (saveData(data)) { renderResult(); toast("지도법을 선택했어요"); }
     else toast("저장하지 못했어요");
   }
+  const consultLink = e.target.closest("[data-consult]");
+  if (consultLink) { currentConsultId = consultLink.dataset.consult; location.hash = "#result"; }
+});
+
+document.getElementById("profileForm")?.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const data = loadData();
+  data.profile.name = document.getElementById("profileName").value.trim();
+  data.profile.ageMonths = Number(document.getElementById("profileAge").value);
+  if (!data.profile.name) return;
+  if (saveData(data)) { renderHome(); toast("프로필을 저장했어요"); }
+  else toast("저장하지 못했어요");
 });
 
 document.getElementById("filterChips")?.addEventListener("click", (e) => {
