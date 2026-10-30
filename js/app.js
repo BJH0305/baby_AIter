@@ -297,7 +297,7 @@ document.getElementById("askForm")?.addEventListener("submit", async (event) => 
   try {
     const mode = document.querySelector("#modeChips .on")?.dataset.value || "fast";
     loading.querySelector("p").textContent = mode === "deep" ? "자료를 꼼꼼히 비교하고 있어요" : "분석하고 있어요";
-    const result = createCauseAnswer(input);
+    const result = await askCauseAI(input, mode);
     pendingConsult = { input, answer: applySafety(result, input) };
     const data = loadData();
     const id = `c_${Date.now()}`;

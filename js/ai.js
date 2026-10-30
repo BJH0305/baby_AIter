@@ -105,3 +105,39 @@ function createCauseAnswer(input) {
   Object.defineProperty(answer, "_meta", { value: { source: "rule", cards: candidates.map((c) => window.KNOWLEDGE.find((card) => card.id === c.cardId)), fallback: false, mode: "fast" } });
   return answer;
 }
+
+// JSON 형식뿐 아니라 후보 id·중복·문장 길이·금지 표현을 검증한다.
+function validCauseExplanations(answer, candidates) {
+  if (!answer || !Array.isArray(answer.explanations) || answer.explanations.length !== candidates.length || Object.keys(answer).some((key) => key !== "explanations")) return false;
+  const allowed = new Set(candidates.map((c) => c.cardId)), seen = new Set();
+  return answer.explanations.every((item) => {
+    if (!item || Object.keys(item).some((key) => !["cardId", "why"].includes(key)) || !allowed.has(item.cardId) || seen.has(item.cardId) || typeof item.why !== "string" || !item.why.trim() || item.why.length > 300 || /[%％]|정확도|확률|진단|장애|질환|ADHD|자폐|확실|틀림없|반드시|원인입니다/i.test(item.why)) return false;
+    seen.add(item.cardId); return true;
+  });
+}
+// AI는 규칙이 정한 후보의 설명만 바꾼다. 위험 신호는 API 호출보다 먼저 처리한다.
+async function askCauseAI(input, requestedMode = "fast") {
+  const base = createCauseAnswer(input), config = window.APP_CONFIG || {};
+  base.level = applySafety(base, input).level;
+  const mode = requestedMode === "deep" ? "deep" : "fast";
+  if (base.level === "red" || !base.candidates.length || config.AI_MODE !== "live") return base;
+  let timer;
+  const controller = new AbortController();
+  try {
+    if (!config.API_URL) throw new Error("no endpoint");
+    const selectedAnswers = window.QUESTIONS.map((q) => ({ question: q.title, answer: q.options.find((o) => o.value === input.answers?.[q.id])?.label || "잘 모르겠어요" }));
+    const request = fetch(config.API_URL, { method: "POST", headers: { "Content-Type": "application/json" }, signal: controller.signal,
+      body: JSON.stringify({ task: "cause", mode, input: { ageMonths: input.ageMonths, answers: selectedAnswers, text: input.text || "" }, cards: base._meta.cards.map(({ id, title, clues, explain, evidence }) => ({ id, title, clues, explain, evidence })), candidates: base.candidates })
+    }).then(async (res) => { if (!res.ok) throw new Error("request failed"); return res.json(); });
+    const timeout = new Promise((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(new Error("timeout")); }, mode === "deep" ? 30000 : 12000); });
+    const result = await Promise.race([request, timeout]);
+    if (!validCauseExplanations(result.answer, base.candidates)) throw new Error("invalid cause answer");
+    const answer = { ...base, candidates: base.candidates.map((c) => ({ ...c, why: result.answer.explanations.find((e) => e.cardId === c.cardId).why })) };
+    Object.defineProperty(answer, "_meta", { value: { ...base._meta, source: "ai", mode } });
+    return answer;
+  } catch {
+    const answer = { ...base };
+    Object.defineProperty(answer, "_meta", { value: { ...base._meta, fallback: true, mode } });
+    return answer;
+  } finally { clearTimeout(timer); }
+}
