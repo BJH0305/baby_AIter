@@ -208,7 +208,8 @@ function renderLegacyHome() {
 function renderResult() {
   const container = document.getElementById("resultContent");
   const consult = loadData().consults.find((item) => item.id === currentConsultId) || (!currentConsultId ? getInspections()[0] : null);
-  if (!container || !consult) return;
+  if (!container) return;
+  if (!consult) { container.innerHTML = '<div class="empty"><p>아직 검사 결과가 없어요</p><a class="btn btn-secondary" href="#ask">질문 검사</a></div>'; return; }
   if (consult.answer.type === "cause") { currentConsultId = consult.id; renderCauseResult(container, consult); return; }
   container.innerHTML = '<div class="empty"><p>이전 상담 기록이에요. 새로운 질문 검사를 시작해 주세요.</p><a class="btn btn-secondary" href="#ask">질문 검사로</a></div>';
   return;
@@ -241,7 +242,7 @@ function inspectionTitle(consult) {
   return consult.answer.candidates.map((c) => window.KNOWLEDGE.find((card) => card.id === c.cardId)?.title).filter(Boolean).join(" · ") || "원인 후보를 좁히기 어려워요";
 }
 function inspectionRow(consult) {
-  return `<div class="card section"><p class="muted">${esc(consult.createdAt)}</p><h3 class="title-md">${esc(inspectionTitle(consult))}</h3><p>결과가 맞았나요? ${esc(feedbackLabels[consult.feedbackResult] || "아직 답하지 않았어요")}</p><button class="btn btn-secondary" type="button" data-consult="${esc(consult.id)}">결과 보기</button></div>`;
+  return `<div class="card section"><p class="muted">${esc(consult.createdAt)}</p><h3 class="title-md">${esc(inspectionTitle(consult))}</h3><p>결과가 맞았나요? ${esc(feedbackLabels[consult.feedbackResult] || "아직 답하지 않았어요")}</p><button class="btn btn-secondary" type="button" data-consult="${esc(consult.id)}">결과 보기</button><button class="btn btn-ghost" type="button" data-delete-record="${esc(consult.id)}">삭제</button></div>`;
 }
 function renderHome() {
   const data = loadData();
@@ -318,7 +319,7 @@ document.querySelector('[data-screen="home"] .topbar h1')?.addEventListener("cli
 
 document.getElementById("editProfile")?.addEventListener("click", () => {
   const profile = loadData().profile;
-  openSheet(`<h2 class="title-md">아이 프로필 수정</h2><form id="profileForm"><div class="field"><label class="label" for="profileName">가명</label><input class="input" id="profileName" required maxlength="30" value="${esc(profile.name)}" /></div><div class="field"><label class="label" for="profileAge">개월 수</label><input class="input" id="profileAge" type="number" min="24" max="47" required value="${esc(profile.ageMonths)}" /></div><button class="btn btn-primary btn-block" type="submit">저장</button></form>`);
+  openSheet(`<h2 class="title-md">아이 프로필 수정</h2><form id="profileForm"><div class="field"><label class="label" for="profileName">가명</label><input class="input" id="profileName" required maxlength="30" value="${esc(profile.name)}" /></div><div class="field"><label class="label" for="profileAge">개월 수</label><input class="input" id="profileAge" type="number" min="24" max="47" required value="${esc(profile.ageMonths)}" /></div><button class="btn btn-primary btn-block" type="submit">저장</button><button type="button" class="btn btn-ghost btn-block" data-clear-records>전체 기록 초기화</button></form>`);
 });
 document.getElementById("sheetBody")?.addEventListener("submit", (event) => {
   if (event.target.id !== "profileForm") return;
@@ -408,3 +409,19 @@ document.getElementById("quizBack").addEventListener("click", () => { quizIndex 
 renderQuiz();
 
 showScreen(location.hash.slice(1) || "home");
+
+// 삭제는 바텀시트에서 확인한 뒤 수행하며 프로필과 시연 복원 기능은 보존한다.
+document.addEventListener("click", (event) => {
+  const remove = event.target.closest("[data-delete-record]"), clear = event.target.closest("[data-clear-records]");
+  if (remove || clear) {
+    openSheet(`<h2 class="title-md">${clear ? "전체 기록을 초기화할까요?" : "이 기록을 삭제할까요?"}</h2><div class="section"><button type="button" class="btn btn-secondary" data-cancel-delete>취소</button><button type="button" class="btn btn-primary" data-confirm-delete="${clear ? "all" : esc(remove.dataset.deleteRecord)}">삭제</button></div>`);
+  }
+  if (event.target.closest("[data-cancel-delete]")) closeSheet();
+  const confirm = event.target.closest("[data-confirm-delete]");
+  if (!confirm) return;
+  const data = loadData(), id = confirm.dataset.confirmDelete;
+  data.consults = id === "all" ? [] : data.consults.filter((c) => c.id !== id);
+  data.feedback = id === "all" ? [] : data.feedback.filter((f) => f.consultId !== id);
+  if (saveData(data)) { if (id === "all" || currentConsultId === id) currentConsultId = null; closeSheet(); render(); toast(id === "all" ? "전체 기록을 초기화했어요" : "기록을 삭제했어요"); }
+  else toast("삭제하지 못했어요");
+});
