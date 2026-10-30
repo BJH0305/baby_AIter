@@ -49,7 +49,7 @@ function saveData(data) {
 // 위험 신호나 14일 이상 효과 없음 기록이 있으면 답변보다 규칙을 우선한다.
 function applySafety(answer, input, feedback = [], today = new Date()) {
   const text = `${input.text || ""} ${input.situation || ""}`;
-  const dangerAnswer = (window.QUESTIONS || []).some((q) => q.options.some((o) => o.danger && input.answers?.[q.id] === o.value));
+  const dangerAnswer = input.answers?.["q-condition"] === "injury" || (window.QUESTIONS || []).some((q) => q.options.some((o) => o.danger && input.answers?.[q.id] === o.value));
   const hasFlag = dangerAnswer || (window.KNOWLEDGE || []).some((card) => (card.redFlagKeywords || []).some((flag) => text.includes(flag)));
   const dates = feedback.map((entry) => entry.date).filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date)).sort();
   const elapsed = dates.length ? (Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - Date.parse(`${dates[0]}T00:00:00Z`)) / 86400000 : 0;

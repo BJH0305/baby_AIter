@@ -1,6 +1,10 @@
 // 공식 자료의 관찰 항목을 부모용으로 재구성했다. 발달검사 문항은 사용하지 않는다.
 // scores는 순위 정렬용 내부 규칙이며 확률이나 검증된 검사 점수가 아니다.
 window.QUESTIONS = [
+  { id: "q-safety", title: "물린 곳에 상처나 피가 났나요?", source: "Head Start: 피부 손상·출혈 안내", options: [
+    { value: "yes", label: "예", scores: {}, danger: true },
+    { value: "no", label: "아니오", scores: {} }
+  ]},
   { id: "q-situation", title: "깨물기 바로 전, 어떤 일이 있었나요?", source: "지침서 인쇄 227~229쪽; CHLA 1쪽", options: [
     { value: "toy", label: "놀잇감을 가져가거나 만졌어요", scores: {frustration: 3} },
     { value: "blocked", label: "스스로 하려던 일을 제지했어요", scores: {control: 3, frustration: 1} },
@@ -15,10 +19,10 @@ window.QUESTIONS = [
     { value: "home", label: "집", scores: {} }, { value: "nursery", label: "어린이집", scores: {} },
     { value: "outside", label: "그 밖의 장소", scores: {} }, { value: "unknown", label: "잘 모르겠어요", scores: {} }
   ]},
-  { id: "q-condition", title: "상처와 깨물기 직전 상태를 살펴봐 주세요", help: "상처가 있으면 다른 상태보다 먼저 선택해 주세요.", source: "CHLA 1쪽; Head Start 웹; Virtual Lab School 1쪽", options: [
-    { value: "injury", label: "상처·출혈이 생겼어요", scores: {}, danger: true },
+  { id: "q-condition", title: "깨물기 직전 컨디션은 어땠나요?", source: "CHLA 1쪽; Head Start 웹; Virtual Lab School 1쪽", options: [
     { value: "tired", label: "피곤하거나 졸려했어요", scores: {condition: 3} },
     { value: "hungry", label: "배고파했어요", scores: {condition: 3} },
+    { value: "unwell", label: "아픈 곳이 있었어요", scores: {condition: 3} },
     { value: "unknown", label: "해당 없거나 잘 모르겠어요", scores: {} }
   ]},
   { id: "q-teething", title: "최근 입이나 잇몸에서 이런 모습이 있었나요?", source: "CHLA 1쪽; 지침서 인쇄 230쪽", options: [
