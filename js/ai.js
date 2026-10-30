@@ -86,7 +86,7 @@ async function askAI(input, history = null, requestedMode = "fast") {
 // 선택한 답변의 내부 가중치만으로 후보를 정렬한다. 메모·대상·장소만으로 원인을 추정하지 않는다.
 function scoreCauses(input = {}) {
   const age = Number(input.ageMonths);
-  if (!Number.isInteger(age) || age < 24 || age > 47) return [];
+  if (!Number.isInteger(age) || age < 12 || age > 59) return [];
   return window.KNOWLEDGE.map((card, index) => {
     let score = 0;
     const reasons = [];

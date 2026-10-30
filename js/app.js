@@ -258,7 +258,8 @@ function renderLog() {
 function renderCauseResult(container, consult) {
   const answer = applySafety(consult.answer, consult.input);
   const safety = answer.level === "red" ? '<div class="section card" role="alert"><h2 class="title-md">전문가 상담 권장</h2><p>먼저 물린 사람의 안전과 상처를 확인해 주세요. 육아종합지원센터 또는 소아청소년과에 상담해 보세요.</p></div>' : "";
-  container.innerHTML = `${safety}<div class="section"><p>가능성이 높은 원인 후보예요. 진단이 아니에요.</p><details class="muted result-note"><summary>안내 더보기</summary><p>여러 이유가 겹칠 수 있으며, 동점 후보의 순서는 가능성 차이를 뜻하지 않아요.</p></details><span class="badge">${consult.source === "ai" ? "AI 설명" : "기본 설명"}</span></div>` + (answer.candidates.length ? answer.candidates.map((candidate) => {
+  const ageNotice = consult.input.ageMonths < 24 || consult.input.ageMonths > 47 ? '<div class="section card"><p>주 대상(24~47개월)이 아니어서 참고용으로 봐 주세요</p></div>' : "";
+  container.innerHTML = `${safety}${ageNotice}<div class="section"><p>가능성이 높은 원인 후보예요. 진단이 아니에요.</p><details class="muted result-note"><summary>안내 더보기</summary><p>여러 이유가 겹칠 수 있으며, 동점 후보의 순서는 가능성 차이를 뜻하지 않아요.</p></details><span class="badge">${consult.source === "ai" ? "AI 설명" : "기본 설명"}</span></div>` + (answer.candidates.length ? answer.candidates.map((candidate) => {
     const card = window.KNOWLEDGE.find((c) => c.id === candidate.cardId);
     if (!card) return "";
     const selected = scoreCauses(consult.input).find((c) => c.cardId === card.id)?.reasons.join(" / ") || "[확인 필요]";
@@ -319,7 +320,7 @@ document.querySelector('[data-screen="home"] .topbar h1')?.addEventListener("cli
 
 document.getElementById("editProfile")?.addEventListener("click", () => {
   const profile = loadData().profile;
-  openSheet(`<h2 class="title-md">아이 프로필 수정</h2><form id="profileForm"><div class="field"><label class="label" for="profileName">가명</label><input class="input" id="profileName" required maxlength="30" value="${esc(profile.name)}" /></div><div class="field"><label class="label" for="profileAge">개월 수</label><input class="input" id="profileAge" type="number" min="24" max="47" required value="${esc(profile.ageMonths)}" /></div><button class="btn btn-primary btn-block" type="submit">저장</button><button type="button" class="btn btn-ghost btn-block" data-clear-records>전체 기록 초기화</button></form>`);
+  openSheet(`<h2 class="title-md">아이 프로필 수정</h2><form id="profileForm"><div class="field"><label class="label" for="profileName">가명</label><input class="input" id="profileName" required maxlength="30" value="${esc(profile.name)}" /></div><div class="field"><label class="label" for="profileAge">개월 수</label><input class="input" id="profileAge" type="number" min="12" max="59" required value="${esc(profile.ageMonths)}" /></div><button class="btn btn-primary btn-block" type="submit">저장</button><button type="button" class="btn btn-ghost btn-block" data-clear-records>전체 기록 초기화</button></form>`);
 });
 document.getElementById("sheetBody")?.addEventListener("submit", (event) => {
   if (event.target.id !== "profileForm") return;
@@ -346,7 +347,7 @@ document.getElementById("askForm")?.addEventListener("submit", async (event) => 
   const loading = document.getElementById("askLoading");
   if (quizIndex !== window.QUESTIONS.length || window.QUESTIONS.some((q) => !isQuizAnswered(q))) return;
   const input = getQuizInput();
-  if (!Number.isInteger(input.ageMonths) || input.ageMonths < 24 || input.ageMonths > 47) { toast("24~47개월 대상이에요. 프로필을 확인해 주세요"); return; }
+  if (!Number.isInteger(input.ageMonths) || input.ageMonths < 12 || input.ageMonths > 59) { toast("12~59개월 범위에서 프로필을 확인해 주세요"); return; }
   form.hidden = true;
   loading.hidden = false;
   try {
