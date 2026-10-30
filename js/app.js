@@ -153,13 +153,34 @@ function getInspections(data = loadData()) {
 function inspectionTitle(consult) {
   return consult.answer.candidates.map((c) => window.KNOWLEDGE.find((card) => card.id === c.cardId)?.title).filter(Boolean).join(" · ") || "원인 후보를 좁히기 어려워요";
 }
+// 원인 아이콘은 결과·최근 기록·홈 궤도에서 같은 매핑을 사용한다.
+const causeIcons = {frustration: "message-circle", condition: "moon", change: "house", play: "puzzle", explore: "smile", attention: "users", control: "hand"};
+const orbitCauses = [["frustration", "표현"], ["condition", "피로"], ["change", "환경"], ["play", "놀이"], ["explore", "탐색"], ["attention", "관심"]];
+const icon = (name) => `<i data-lucide="${name}" aria-hidden="true"></i>`;
+function causeIcon(id) { return causeIcons[id?.replace("cause-", "")] || "circle-help"; }
+function optionIcon(questionId, value) {
+  if (value === "other") return "pencil";
+  if (value === "unknown" || value === "none") return "circle-help";
+  const byQuestion = {
+    "q-safety": {yes: "triangle-alert", no: "shield-check"},
+    "q-situation": {toy: "blocks", blocked: "hand", play: "puzzle"},
+    "q-target": {peer: "users", sibling: "baby", adult: "user-round"},
+    "q-context": {home: "house", nursery: "school", outside: "map-pin"},
+    "q-condition": {tired: "moon", hungry: "utensils", unwell: "thermometer"},
+    "q-teething": {yes: "smile", no: "minus"},
+    "q-expression": {difficult: "message-circle", attention: "users", self: "hand"},
+    "q-change": {baby: "baby", move: "house", nursery: "school"}
+  };
+  return byQuestion[questionId]?.[value] || "circle-help";
+}
 function inspectionRow(consult) {
-  return `<div class="card section"><p class="muted">${esc(consult.createdAt)}</p><h3 class="title-md">${esc(inspectionTitle(consult))}</h3><p>결과가 맞았나요? ${esc(feedbackLabels[consult.feedbackResult] || "아직 답하지 않았어요")}</p><button class="btn btn-secondary" type="button" data-consult="${esc(consult.id)}">결과 보기</button><button class="btn btn-ghost" type="button" data-delete-record="${esc(consult.id)}">삭제</button></div>`;
+  return `<div class="card section inspection-card"><div class="inspection-meta"><span class="icon-badge">${icon(causeIcon(consult.answer.candidates[0]?.cardId))}</span><p class="muted">${esc(consult.createdAt)}</p></div><h3 class="title-md">${esc(inspectionTitle(consult))}</h3><p>결과가 맞았나요? ${esc(feedbackLabels[consult.feedbackResult] || "아직 답하지 않았어요")}</p><button class="btn btn-secondary btn-sm" type="button" data-consult="${esc(consult.id)}">결과 보기</button><button class="btn btn-ghost btn-sm" type="button" data-delete-record="${esc(consult.id)}">삭제</button></div>`;
 }
 function renderHome() {
   const data = loadData();
   document.getElementById("profileSummary").textContent = `${data.profile.name} · ${data.profile.ageMonths}개월`;
-  const orbitItems = [["message-circle", "표현", 50, 0], ["moon", "피로", 93, 25], ["house", "환경", 93, 75], ["puzzle", "놀이", 50, 100], ["smile", "탐색", 7, 75], ["users", "관심", 7, 25]];
+  const positions = [[50, 0], [93, 25], [93, 75], [50, 100], [7, 75], [7, 25]];
+  const orbitItems = orbitCauses.map(([key, label], index) => [causeIcons[key], label, ...positions[index]]);
   const orbit = document.getElementById("homeOrbitNodes");
   if (orbit) orbit.innerHTML = orbitItems.map(([name, label, x, y]) => `<div class="home-node" style="left:${x}%;top:${y}%"><span class="icon-badge"><i data-lucide="${name}"></i></span><span>${label}</span></div>`).join("");
   const recent = getInspections(data).slice(0, 3);
@@ -179,7 +200,7 @@ function displayTip(text, input) {
 // 첫 화면에는 요약만 표시하고, 선택 답변·AI 설명·원문 근거는 접어 둔다.
 function renderCauseResult(container, consult) {
   const answer = applySafety(consult.answer, consult.input);
-  const safety = answer.level === "red" ? '<div class="section card" role="alert"><h2 class="title-md">전문가 상담 권장</h2><p>먼저 물린 사람의 안전과 상처를 확인해 주세요. 육아종합지원센터 또는 소아청소년과에 상담해 보세요.</p></div>' : "";
+  const safety = answer.level === "red" ? '<div class="section card safety-alert" role="alert"><h2 class="title-md"><span class="icon-badge"><i data-lucide="triangle-alert" aria-hidden="true"></i></span>전문가 상담 권장</h2><p>먼저 물린 사람의 안전과 상처를 확인해 주세요. 육아종합지원센터 또는 소아청소년과에 상담해 보세요.</p></div>' : "";
   const targetSummary = {peer: "친구를 깨물었을 때", sibling: "형제자매를 깨물었을 때", adult: "보호자·어른을 깨물었을 때"}[consult.input.answers?.["q-target"]] || "깨물기 상황";
   const inputSummary = `${consult.input.ageMonths}개월 · ${targetSummary}`;
   container.innerHTML = `${safety}<p class="section muted">${esc(inputSummary)}</p><div class="section result-heading"><h1 class="result-title">원인 후보</h1><p>가능성이 높은 원인 후보예요. 진단이 아니에요.</p><p class="muted result-note">원인은 여러 개가 함께 있을 수 있어요. 위에 있다고 더 확실한 건 아니에요.</p><span class="badge">${consult.source === "ai" ? "AI 설명" : "기본 설명"}</span></div>` + (answer.candidates.length ? answer.candidates.map((candidate) => {
@@ -189,7 +210,7 @@ function renderCauseResult(container, consult) {
     // AI가 쓴 이유를 먼저 보여 주고, 없는 경우 카드의 전체 설명을 사용한다.
     const hasAI = consult.source === "ai" && typeof candidate.why === "string" && candidate.why.trim().length > 0;
     const explanation = hasAI ? candidate.why : card.explain;
-    return `<article class="section card cause-card"><h2 class="title-md">${esc(card.title)}</h2>${hasAI ? '<p class="label">우리 아이 답변으로 본 이유</p>' : ""}<p class="cause-summary">${esc(explanation)}</p><div class="cause-tips"><b>이럴 땐 이렇게</b><ul>${card.tips.map((tip) => `<li>${esc(displayTip(tip.text, consult.input))}</li>`).join("")}</ul></div><details><summary>근거 보기</summary><div class="evidence-body">${hasAI ? `<p>${esc(card.explain)}</p>` : ""}<p>선택한 답변: ${esc(selected)}</p><p class="muted source-text">${esc(displaySource(card))}</p>${sourceLink(card)}<blockquote>${esc(card.evidence)}</blockquote>${card.verified === false ? '<span class="badge">검수 중</span>' : ""}</div></details></article>`;
+    return `<article class="section card cause-card"><h2 class="title-md cause-heading"><span class="icon-badge">${icon(causeIcon(card.id))}</span>${esc(card.title)}</h2>${hasAI ? '<p class="label reason-label"><i data-lucide="sparkles" aria-hidden="true"></i>우리 아이 답변으로 본 이유</p>' : ""}<p class="cause-summary">${esc(explanation)}</p><div class="cause-tips"><b class="tip-heading">${icon("heart")}이럴 땐 이렇게</b><ul>${card.tips.map((tip) => `<li>${icon("check")}<span>${esc(displayTip(tip.text, consult.input))}</span></li>`).join("")}</ul></div><details><summary><span>${icon("book-open")}근거 보기</span></summary><div class="evidence-body">${hasAI ? `<p>${esc(card.explain)}</p>` : ""}<p>선택한 답변: ${esc(selected)}</p><p class="muted source-text">${icon("book-open")}<span>${esc(displaySource(card))}</span></p>${sourceLink(card)}<blockquote>${esc(card.evidence)}</blockquote>${card.verified === false ? '<span class="badge">검수 중</span>' : ""}</div></details></article>`;
   }).join("") : '<div class="section empty"><p>답변만으로 원인 후보를 좁히기 어려워요.</p><p>관찰 내용을 확인하고 다시 답해 주세요.</p></div>') + `<div class="section card"><h2 class="title-md">결과가 맞았나요?</h2><div class="chips" role="group" aria-label="결과 피드백">${Object.entries(feedbackLabels).map(([value, label]) => `<button type="button" class="chip ${consult.feedbackResult === value ? "on" : ""}" aria-pressed="${consult.feedbackResult === value}" data-cause-feedback="${value}" data-inspection="${esc(consult.id)}">${label}</button>`).join("")}</div></div><a class="btn btn-secondary btn-block" href="#ask">답변 다시 살펴보기</a><a class="btn btn-ghost btn-block" href="#log">검사 기록 보기</a>`;
 }
 // 한 탭으로 검사별 피드백을 갱신한다. 이전 지도법 피드백과 섞지 않는다.
@@ -214,7 +235,7 @@ document.addEventListener("click", (event) => {
 });
 
 function refreshIcons() {
-  if (window.lucide) window.lucide.createIcons();
+  if (window.lucide) window.lucide.createIcons({ attrs: { "stroke-width": 1.8, "aria-hidden": "true" } });
 }
 
 // ---------- 이벤트 ----------
@@ -246,7 +267,7 @@ document.getElementById("sheetBody")?.addEventListener("submit", (event) => {
   data.profile.name = document.getElementById("profileName").value.trim();
   data.profile.ageMonths = Number(document.getElementById("profileAge").value);
   if (!data.profile.name) return;
-  if (saveData(data)) { closeSheet(); renderHome(); toast("프로필을 저장했어요"); }
+  if (saveData(data)) { closeSheet(); renderHome(); refreshIcons(); toast("프로필을 저장했어요"); }
   else toast("저장하지 못했어요");
 });
 
@@ -292,13 +313,14 @@ function getQuizInput() {
 }
 function renderQuiz() {
   const questions = window.QUESTIONS, question = questions[quizIndex], done = !question;
-  document.getElementById("questionContent").innerHTML = `<p class="section">${done ? questions.length : quizIndex + 1} / ${questions.length}</p><div class="progress" role="progressbar" aria-label="질문 진행" aria-valuemin="0" aria-valuemax="${questions.length}" aria-valuenow="${quizIndex}"><i style="width:calc(100% * ${quizIndex} / ${questions.length})"></i></div>` + (done ? '<h2 class="title-md section">질문에 모두 답했어요</h2><p>특별한 상황이 있으면 적어 주세요.</p>' : `<h2 class="title-md section" id="questionTitle">${esc(question.title)}</h2>${question.help ? `<p class="muted section">${esc(question.help)}</p>` : ""}<div role="group" aria-labelledby="questionTitle">${question.options.map((o) => `<div class="field"><button type="button" class="btn ${quizAnswers[question.id] === o.value ? "btn-primary" : "btn-secondary"} btn-block" data-answer="${o.value}" aria-pressed="${quizAnswers[question.id] === o.value}">${esc(o.label)}</button></div>`).join("")}</div>`);
+  document.getElementById("questionContent").innerHTML = `<p class="section">${done ? questions.length : quizIndex + 1} / ${questions.length}</p><div class="progress" role="progressbar" aria-label="질문 진행" aria-valuemin="0" aria-valuemax="${questions.length}" aria-valuenow="${quizIndex}"><i style="width:calc(100% * ${quizIndex} / ${questions.length})"></i></div>` + (done ? '<h2 class="title-md section">질문에 모두 답했어요</h2><p>특별한 상황이 있으면 적어 주세요.</p>' : `<h2 class="title-md section" id="questionTitle">${esc(question.title)}</h2>${question.help ? `<p class="muted section">${esc(question.help)}</p>` : ""}<div role="group" aria-labelledby="questionTitle">${question.options.map((o) => `<div class="field"><button type="button" class="btn question-option ${quizAnswers[question.id] === o.value ? "btn-primary" : "btn-secondary"} btn-block" data-answer="${o.value}" aria-pressed="${quizAnswers[question.id] === o.value}"><span class="option-icon">${icon(optionIcon(question.id, o.value))}</span><span>${esc(o.label)}</span></button></div>`).join("")}</div>`);
   if (!done && quizAnswers[question.id] === "other") document.getElementById("questionContent").innerHTML += `<div class="field"><label class="label" for="quizOther">기타 직접 입력</label><input class="input" id="quizOther" maxlength="40" value="${esc(quizOtherAnswers[question.id] || "")}" placeholder="직접 입력해 주세요" /></div>`;
   document.getElementById("quizBack").hidden = quizIndex === 0;
   document.getElementById("quizNext").hidden = done;
   document.getElementById("quizNext").disabled = !done && !isQuizAnswered(question);
   document.getElementById("quizSubmit").hidden = !done;
   document.getElementById("quizNote").hidden = !done;
+  refreshIcons();
 }
 document.getElementById("questionContent").addEventListener("click", (e) => {
   const option = e.target.closest("[data-answer]");
