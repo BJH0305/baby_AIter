@@ -26,13 +26,26 @@ let items = store.load();
 // 상담 화면에서 결과 화면으로 넘길 임시 데이터.
 let pendingConsult = null;
 let currentConsultId = null;
+// 최초 실행과 시연 초기화에 사용할 가명 예시 데이터.
+function demoData() {
+  const input = { target: "동생", situation: "동생을 안고 있을 때", text: "", ageMonths: 38 };
+  return {
+    profile: { name: "도윤", ageMonths: 38, hasSibling: true },
+    consults: [{ id: "c_demo", createdAt: "2026-10-27", round: 1, parentId: null, input, cardIds: ["bite-sibling", "bite-basic"], answer: structuredClone(MOCK.first), tried: ["m1", "m2"] }],
+    feedback: [
+      { id: "f_demo3", consultId: "c_demo", methodId: "m1", date: "2026-10-29", result: "good", memo: "" },
+      { id: "f_demo2", consultId: "c_demo", methodId: "m2", date: "2026-10-28", result: "none", memo: "" },
+      { id: "f_demo1", consultId: "c_demo", methodId: "m1", date: "2026-10-27", result: "good", memo: "" }
+    ]
+  };
+}
 // 상담과 피드백은 서비스 전용 저장소에 보관한다.
 function loadData() {
   try {
     const data = JSON.parse(localStorage.getItem("babyaiter-v1"));
     if (data && data.profile && Array.isArray(data.consults) && Array.isArray(data.feedback)) return data;
   } catch {}
-  return { profile: { name: "도윤", ageMonths: 38, hasSibling: true }, consults: [], feedback: [] };
+  return demoData();
 }
 function saveData(data) {
   try { localStorage.setItem("babyaiter-v1", JSON.stringify(data)); return true; } catch { return false; }
@@ -282,6 +295,16 @@ document.addEventListener("click", (e) => {
   }
   const consultLink = e.target.closest("[data-consult]");
   if (consultLink) { currentConsultId = consultLink.dataset.consult; location.hash = "#result"; }
+});
+
+// 홈 제목을 다섯 번 탭하면 예시 데이터로 되돌린다.
+let titleTaps = 0;
+document.querySelector('[data-screen="home"] .topbar h1')?.addEventListener("click", () => {
+  titleTaps += 1;
+  if (titleTaps < 5) return;
+  titleTaps = 0;
+  if (saveData(demoData())) { currentConsultId = null; render(); toast("예시 데이터로 초기화했어요"); }
+  else toast("초기화하지 못했어요");
 });
 
 document.getElementById("profileForm")?.addEventListener("submit", (event) => {
