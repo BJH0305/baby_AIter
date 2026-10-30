@@ -110,7 +110,6 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&
 function render() {
   const age = document.getElementById("askAge");
   if (age) age.textContent = `${getProfile().name} · ${getProfile().ageMonths}개월`;
-  document.getElementById("modeField").hidden = quizIndex < window.QUESTIONS.length || window.APP_CONFIG?.AI_MODE !== "live";
   renderHome();
   renderResult();
   renderLog();
@@ -370,7 +369,7 @@ document.getElementById("askForm")?.addEventListener("submit", async (event) => 
   form.hidden = true;
   loading.hidden = false;
   try {
-    const mode = document.querySelector("#modeChips .on")?.dataset.value || "fast";
+    const mode = "fast";
     loading.querySelector("p").textContent = mode === "deep" ? "자료를 꼼꼼히 비교하고 있어요" : "분석하고 있어요";
     const result = await askCauseAI(input, mode);
     pendingConsult = { input, answer: applySafety(result, input) };
@@ -408,7 +407,6 @@ function renderQuiz() {
   document.getElementById("quizNext").disabled = !done && !isQuizAnswered(question);
   document.getElementById("quizSubmit").hidden = !done;
   document.getElementById("quizNote").hidden = !done;
-  document.getElementById("modeField").hidden = !done || window.APP_CONFIG?.AI_MODE !== "live";
 }
 document.getElementById("questionContent").addEventListener("click", (e) => {
   const option = e.target.closest("[data-answer]");

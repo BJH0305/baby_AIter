@@ -55,7 +55,7 @@ function isValidAnswer(answer, cards) {
 
 // 서버가 실패하거나 지연되면 동일한 카드로 기본 답변을 만든다.
 async function askAI(input, history = null, requestedMode = "fast") {
-  const mode = requestedMode === "deep" ? "deep" : "fast";
+  const mode = "fast";
   const cards = getConsultCards(input);
   const config = window.APP_CONFIG || {};
   const useLive = config.AI_MODE === "live";
@@ -115,7 +115,7 @@ function validCauseExplanations(answer, candidates) {
 async function askCauseAI(input, requestedMode = "fast") {
   const base = createCauseAnswer(input), config = window.APP_CONFIG || {};
   base.level = applySafety(base, input).level;
-  const mode = requestedMode === "deep" ? "deep" : "fast";
+  const mode = "fast";
   if (base.level === "red" || !base.candidates.length || config.AI_MODE !== "live") return base;
   let timer;
   const controller = new AbortController();
