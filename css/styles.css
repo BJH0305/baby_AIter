@@ -97,3 +97,10 @@ h1,h2,h3 { line-height:1.35; letter-spacing:-.025em; }.title-md { font-size:17px
 .question-option.is-selected { transform:scale(1.02); background:var(--accent-soft); border-color:var(--text); }.question-option.is-selected .option-check { background:var(--text); border-color:var(--text); color:var(--accent); }.question-option.is-selected .option-check svg { visibility:visible; }
 .option-list.has-selection .question-option:not(.is-selected) { transform:scale(.98); opacity:.55; }.option-list.has-selection .question-option:not(.is-selected):hover,.option-list.has-selection .question-option:not(.is-selected):focus-visible { opacity:1; }
 @media (prefers-reduced-motion:reduce) { .question-option { transform:none!important; transition:none!important; } }
+
+/* 최종 시안의 코랄 코어·두 색 리플·검정/노랑 궤도 강조. */
+.analysis-loader { --R:142px; --size:360px; padding:32px 0; }.analysis-ring { opacity:1; animation:none; }.analysis-ring.dash { inset:calc(50% - var(--R) + 52px); }.analysis-core { background:var(--coral); border:4px solid var(--surface); z-index:1; }.analysis-ripple { border-color:var(--accent); }.analysis-ripple.r2 { border-color:var(--coral); }.analysis-chip { width:52px; height:52px; left:-26px; top:-26px; border:1px solid var(--line); }.analysis-label { font-weight:700; }
+@keyframes analysis-glow { 0%,20%,100% { background:var(--surface); color:var(--text); transform:scale(1); border-color:var(--line); }4%,14% { background:var(--text); color:var(--accent); transform:scale(1.12); border-color:var(--text); } }
+.answers-panel > .btn { display:flex; margin-top:20px; border-radius:12px; font-size:12px; }
+@media (max-width:480px) { .analysis-loader { --R:110px; --size:290px; } }
+@media (prefers-reduced-motion:reduce) { .option-list.has-selection .question-option:not(.is-selected) { opacity:1; } }
