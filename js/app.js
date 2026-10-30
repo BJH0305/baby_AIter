@@ -112,6 +112,7 @@ function render() {
   if (age) age.textContent = `아이 개월 수: ${getProfile().ageMonths}개월`;
   renderHome();
   renderResult();
+  renderLog();
   const recent = document.getElementById("recentList");
   if (recent) recent.innerHTML = items.slice(0, 3).map(itemRow).join("");
 
@@ -125,6 +126,45 @@ function render() {
   }
   refreshIcons();
 }
+
+// 선택한 지도법별 피드백 입력과 저장된 기록을 보여 준다.
+function renderLog() {
+  const container = document.getElementById("logContent");
+  if (!container) return;
+  const data = loadData();
+  const tried = data.consults.flatMap((consult) => consult.answer.methods.filter((method) => consult.tried.includes(method.id)).map((method) => ({ consult, method })));
+  const forms = tried.map(({ consult, method }) => `<form class="card section" data-feedback-consult="${esc(consult.id)}" data-feedback-method="${esc(method.id)}"><h3 class="title-md">${esc(method.title)}</h3><div class="field"><span class="label">효과</span><div class="chips"><button type="button" class="chip on" data-result="good" aria-pressed="true">효과 있음</button><button type="button" class="chip" data-result="some" aria-pressed="false">조금</button><button type="button" class="chip" data-result="none" aria-pressed="false">없음</button></div><input type="hidden" name="result" value="good"></div><div class="field"><label class="label">메모 <textarea class="textarea" name="memo"></textarea></label></div><div class="field"><label class="label">날짜 <input class="input" type="date" name="date" required /></label></div><button class="btn btn-secondary" type="submit">저장</button></form>`).join("");
+  const labels = { good: "효과 있음", some: "조금", none: "없음" };
+  const timeline = data.feedback.map((entry) => {
+    const consult = data.consults.find((item) => item.id === entry.consultId);
+    const method = consult?.answer.methods.find((item) => item.id === entry.methodId);
+    return `<div class="card"><h3 class="title-md">${esc(method?.title || "지도법")}</h3><p>${esc(entry.date)} · ${esc(labels[entry.result] || entry.result)}</p><p>${esc(entry.memo || "메모 없음")}</p></div>`;
+  }).join("");
+  container.innerHTML = tried.length ? `<h2 class="title-md section">시도한 지도법</h2>${forms}<h2 class="title-md section">기록</h2>${timeline || '<div class="empty"><p>아직 기록이 없어요</p></div>'}` : '<div class="empty"><p>선택한 지도법이 없어요</p><a class="btn btn-secondary" href="#ask">상담하기</a></div>';
+  const now = new Date();
+  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  container.querySelectorAll('input[name="date"]').forEach((input) => { input.value = today; });
+}
+
+document.getElementById("logContent")?.addEventListener("submit", (event) => {
+  const form = event.target.closest("form[data-feedback-consult]");
+  if (!form) return;
+  event.preventDefault();
+  const data = loadData();
+  data.feedback.unshift({ id: `f_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, consultId: form.dataset.feedbackConsult, methodId: form.dataset.feedbackMethod, date: form.elements.date.value, result: form.elements.result.value, memo: form.elements.memo.value.trim() });
+  if (saveData(data)) { renderLog(); toast("기록을 저장했어요"); }
+  else toast("저장하지 못했어요");
+});
+document.getElementById("logContent")?.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-result]");
+  if (!button) return;
+  const form = button.closest("form");
+  form.elements.result.value = button.dataset.result;
+  form.querySelectorAll("button[data-result]").forEach((item) => {
+    item.classList.toggle("on", item === button);
+    item.setAttribute("aria-pressed", String(item === button));
+  });
+});
 
 // 홈은 저장된 프로필과 상담, 최근 피드백을 보여 준다.
 function renderHome() {
