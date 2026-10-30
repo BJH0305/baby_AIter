@@ -59,10 +59,11 @@
 - [x] T19. AI 설명 연결: live 모드면 상위 후보 카드 + 답변을 Worker로 보내 "왜 이 원인 같은지" 설명 문장만 AI가 다시 쓴다(순위는 규칙이 정함). `api/worker.js`에 `task: "cause"` 분기와 전용 SYSTEM 프롬프트 추가(카드 밖 내용 금지, 진단 금지, JSON `{explanations:[{cardId, why}]}`). 실패하면 규칙 설명 그대로. **worker.js 수정 후 "⏸ 확인 필요"로 멈추고 배준희에게 재배포 요청.**
   - 메모: api/worker.js, js/ai.js, js/app.js, index.html / 모의 통합 검사 통과; T17~T18 Pages 실클릭·콘솔 오류 없음; 실제 AI는 사용자가 재배포 후 task:cause 200·AI 설명 표시 확인 완료 / 사람 원문 검수 미완료
 - [x] T20. 기록 단순화: 결과 아래 "결과가 맞았나요?" 맞아요/일부/아니에요 1탭 저장. 기록 화면은 검사 기록 타임라인(날짜, 상위 원인, 맞았나요). 옛 지도법 피드백·재상담 UI는 숨긴다(코드는 남김). 홈: "검사 시작하기" 큰 버튼 + 최근 검사 3개.
-  - 메모: js/app.js, index.html, css/styles.css / 화면 생성·피드백 저장·중복 제거·내부 메모 숨김·안전 최상단 검사 통과, Pages는 push 후 확인 / 사람 원문 검수 미완료
+  - 메모: js/app.js, index.html, css/styles.css / 화면 생성·피드백 저장·중복 제거·내부 메모 숨김·안전 최상단 검사 통과, Pages 실클릭·저장 유지 확인 완료 / 사람 원문 검수 미완료
 - [x] T21. 디자인 적용: `docs/design-ref/reference.html`(한서희 제공)의 색·글꼴·둥근 카드·여백만 `css/styles.css` :root 토큰에 반영(cream #f7f6f1, green #527b68, ink #24332e, Noto Sans KR). 구조는 지금 모바일 앱 그대로. 서비스 이름은 "베이비 AI터"(레퍼런스의 "베이비 AI 시터" 아님). 레퍼런스의 K-DST 문구는 가져오지 않는다.
-  - 메모: css/styles.css, index.html / CSS 변경은 root 토큰 내부만 확인; 기존 화면 생성 검사 통과, Pages 시각 확인 예정 / 사람 원문 검수 미완료
-- [ ] T22. 시연 데이터·안정화: 도윤(38개월) 시나리오를 질문 검사 기준으로 바꾸고(검사 2회 기록), 375px·콘솔 에러 0·모든 버튼 점검. favicon 추가. Pages 주소(https://bjh0305.github.io/baby_AIter/)에서 확인.
+  - 메모: css/styles.css, index.html / CSS 변경은 root 토큰 내부만 확인; 기존 화면 생성 검사 통과, Pages 크림 배경·녹색·375px 시각 확인 완료 / 사람 원문 검수 미완료
+- [x] T22. 시연 데이터·안정화: 도윤(38개월) 시나리오를 질문 검사 기준으로 바꾸고(검사 2회 기록), 375px·콘솔 에러 0·모든 버튼 점검. favicon 추가. Pages 주소(https://bjh0305.github.io/baby_AIter/)에서 확인.
+  - 메모: js/app.js, index.html, favicon.svg, css/styles.css, docs/DATA.md / Pages 실클릭: AI·위험 우선·후보 없음·피드백 유지·초기화 통과, 콘솔 오류·가로 넘침 없음 / 사람 원문 검수 미완료
   - 메모: js/app.js, index.html, favicon.svg, css/styles.css / 시연 데이터·초기화·파비콘 구현 및 로컬 통합 검사 통과 / Pages 375px·전체 실클릭 확인 중
 
 ## 질문

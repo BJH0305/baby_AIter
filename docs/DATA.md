@@ -58,3 +58,14 @@
 - 검색한 카드의 원인·지도법만 사용한다. 결과가 없으면 기본 카드를 사용한다.
 - 피드백 good/some은 유지하고 none은 아직 사용하지 않은 지도법으로 교체한다.
 - 지도법 ID는 `카드id-인덱스` 형식이다.
+
+
+## 7. 범위 변경 후 검사 기록 (T20~T22)
+- 기존 `babyaiter-v1` 키, `profile`, `consults`, `feedback`를 유지한다. 옛 상담·지도법 피드백은 삭제하지 않고 새 화면에서 숨긴다.
+- 새 검사는 `consult.answer.type === "cause"`로 구별한다.
+- `consult.input.answers`: `js/questions.js`의 질문 id → 선택지 value. `text`는 선택 메모, `ageMonths`는 24~47 범위다.
+- `consult.answer.candidates`: 규칙이 정한 순서의 `{cardId, why}` 목록. AI는 `why`만 바꾸며 점수·가능성 수치는 표시하지 않는다.
+- `consult.feedbackResult`: `yes`(맞아요), `some`(일부), `no`(아니에요). 미응답은 필드가 없다. 같은 검사의 답을 다시 누르면 기존 값을 갱신한다.
+- `createdAt`은 Asia/Seoul 날짜이며 목록은 최신 저장 순서다. 예시 초기화는 도윤(가명, 38개월)의 검사 2회와 해당 피드백을 돌려준다.
+- 출처 원본·로컬 파일명·공개 URL 미확인 메모는 `knowledge.js`에 보존한다. 화면용 `displaySource`는 기관·자료 제목·쪽수만 만든다.
+- 기본 설명과 선택 답변이 같으면 중복 설명을 생략한다. 원문 인용과 선택 답변은 `근거 보기` 안에 표시한다.

@@ -257,13 +257,13 @@ function renderLog() {
 function renderCauseResult(container, consult) {
   const answer = applySafety(consult.answer, consult.input);
   const safety = answer.level === "red" ? '<div class="section card" role="alert"><h2 class="title-md">전문가 상담 권장</h2><p>먼저 물린 사람의 안전과 상처를 확인해 주세요. 육아종합지원센터 또는 소아청소년과에 상담해 보세요.</p></div>' : "";
-  container.innerHTML = `${safety}<div class="section"><p>가능성이 높은 원인 후보예요. 진단이 아니에요.</p><p class="muted">여러 이유가 겹칠 수 있으며, 동점 후보의 순서는 가능성 차이를 뜻하지 않아요.</p><span class="badge">${consult.source === "ai" ? "AI 설명" : "기본 설명"}</span></div>` + (answer.candidates.length ? answer.candidates.map((candidate) => {
+  container.innerHTML = `${safety}<div class="section"><p>가능성이 높은 원인 후보예요. 진단이 아니에요.</p><details class="muted result-note"><summary>안내 더보기</summary><p>여러 이유가 겹칠 수 있으며, 동점 후보의 순서는 가능성 차이를 뜻하지 않아요.</p></details><span class="badge">${consult.source === "ai" ? "AI 설명" : "기본 설명"}</span></div>` + (answer.candidates.length ? answer.candidates.map((candidate) => {
     const card = window.KNOWLEDGE.find((c) => c.id === candidate.cardId);
     if (!card) return "";
     const selected = scoreCauses(consult.input).find((c) => c.cardId === card.id)?.reasons.join(" / ") || "[확인 필요]";
     const same = (candidate.why || "").replace(/\s/g, "") === selected.replace(/\s/g, "");
     const summary = card.explain.match(/^[^。.!?]+[。.!?]?/)?.[0] || card.explain;
-    return `<article class="section card cause-card"><h2 class="title-md">${esc(card.title)}</h2><p>${esc(summary)}</p><p><b>이럴 땐 이렇게</b><br>${esc(card.tip)}</p><details><summary>근거 보기</summary><div class="evidence-body"><p>선택한 답변: ${esc(selected)}</p>${!same ? `<p>왜 이렇게 봤나요: ${esc(candidate.why)}</p>` : ""}<p class="muted source-text">${esc(displaySource(card))}</p><blockquote>${esc(card.evidence)}</blockquote>${card.verified === false ? '<span class="badge">검수 중</span>' : ""}</div></details></article>`;
+    return `<article class="section card cause-card"><h2 class="title-md">${esc(card.title)}</h2><p class="cause-summary">${esc(summary)}</p><p><b>이럴 땐 이렇게</b><br>${esc(card.tip)}</p><details><summary>근거 보기</summary><div class="evidence-body"><p>${esc(card.explain)}</p><p>선택한 답변: ${esc(selected)}</p>${!same ? `<p>왜 이렇게 봤나요: ${esc(candidate.why)}</p>` : ""}<p class="muted source-text">${esc(displaySource(card))}</p><blockquote>${esc(card.evidence)}</blockquote>${card.verified === false ? '<span class="badge">검수 중</span>' : ""}</div></details></article>`;
   }).join("") : '<div class="section empty"><p>답변만으로 원인 후보를 좁히기 어려워요.</p><p>관찰 내용을 확인하고 다시 답해 주세요.</p></div>') + `<div class="section card"><h2 class="title-md">결과가 맞았나요?</h2><div class="chips" role="group" aria-label="결과 피드백">${Object.entries(feedbackLabels).map(([value, label]) => `<button type="button" class="chip ${consult.feedbackResult === value ? "on" : ""}" aria-pressed="${consult.feedbackResult === value}" data-cause-feedback="${value}" data-inspection="${esc(consult.id)}">${label}</button>`).join("")}</div></div><a class="btn btn-secondary btn-block" href="#ask">답변 다시 살펴보기</a><a class="btn btn-ghost btn-block" href="#log">검사 기록 보기</a>`;
 }
 // 한 탭으로 검사별 피드백을 갱신한다. 이전 지도법 피드백과 섞지 않는다.
