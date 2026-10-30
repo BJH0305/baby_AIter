@@ -79,11 +79,11 @@ svg.lucide, [data-lucide] { width: 20px; height: 20px; stroke-width: 1.8; flex-s
   display: grid; grid-template-columns: repeat(3, 1fr);
   background: var(--surface);
   border-top: 1px solid var(--line);
-  padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
 }
 .tabbar a {
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  font-size: 11px; font-weight: 700; color: var(--text-3); padding: 4px 0;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 700; color: var(--text-3); padding: 8px 0;
 }
 .tabbar a.active { color: var(--text); }
 .tabbar a.active svg { color: var(--accent); }
@@ -109,7 +109,7 @@ svg.lucide, [data-lucide] { width: 20px; height: 20px; stroke-width: 1.8; flex-s
 .list { background: var(--surface); border: var(--card-border); border-radius: var(--r-card); overflow: hidden; }
 .list-item {
   display: flex; align-items: center; gap: var(--s3);
-  padding: 14px var(--s4);
+  padding: 16px var(--s4);
   border-bottom: 1px solid var(--line);
   cursor: pointer;
 }
@@ -153,7 +153,7 @@ svg.lucide, [data-lucide] { width: 20px; height: 20px; stroke-width: 1.8; flex-s
 
 /* ---------- 폼 ---------- */
 .field { margin-bottom: var(--s4); }
-.field .label { display: block; margin-bottom: 6px; }
+.field .label { display: block; margin-bottom: 8px; }
 .input, .select, .textarea {
   width: 100%; height: 48px; padding: 0 var(--s4);
   border: 1px solid var(--line); border-radius: var(--r-ctl);
@@ -171,7 +171,7 @@ svg.lucide, [data-lucide] { width: 20px; height: 20px; stroke-width: 1.8; flex-s
 .chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-strong); font-weight: 700; }
 
 .badge {
-  display: inline-block; padding: 2px 8px; border-radius: 6px;
+  display: inline-block; padding: 8px; border-radius: 8px;
   font-size: 12px; font-weight: 700;
   background: var(--bg); color: var(--text-2);
 }
@@ -192,7 +192,7 @@ svg.lucide, [data-lucide] { width: 20px; height: 20px; stroke-width: 1.8; flex-s
 /* ---------- 토스트·바텀시트 ---------- */
 .toast {
   position: fixed; left: 50%; bottom: 96px; transform: translate(-50%, 20px);
-  background: var(--text); color: var(--surface); padding: 12px 18px; border-radius: var(--r-ctl);
+  background: var(--text); color: var(--surface); padding: 16px 24px; border-radius: var(--r-ctl);
   font-size: 14px; opacity: 0; transition: .2s; pointer-events: none; z-index: 50;
   max-width: calc(var(--app-width) - 32px);
 }
@@ -203,7 +203,7 @@ svg.lucide, [data-lucide] { width: 20px; height: 20px; stroke-width: 1.8; flex-s
 .sheet {
   position: fixed; left: 50%; bottom: 0; width: 100%; max-width: var(--app-width);
   transform: translate(-50%, 100%); transition: .25s;
-  background: var(--surface); border-radius: 20px 20px 0 0; padding: var(--s6) var(--s5) var(--s5); z-index: 41;
+  background: var(--surface); border-radius: 24px 24px 0 0; padding: var(--s6) var(--s5) var(--s5); z-index: 41;
   visibility: hidden;
 }
 .sheet.show { transform: translate(-50%, 0); visibility: visible; }
@@ -345,3 +345,8 @@ body { font-weight: 400; }
 @keyframes result-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 @media (max-width: 480px) { .analysis-loader { --R: 112px; --size: 288px; padding: var(--s8) 0; }.analysis-core, .analysis-ripple { width: 96px; height: 96px; margin: -48px 0 0 -48px; }.analysis-messages { width: 304px; }.analysis-messages b { font-size: 18px; } }
 @media (prefers-reduced-motion: reduce) { .analysis-loader *, .results-entering .cause-card { animation: none !important; }.analysis-loader { transition: none; }.analysis-ring { opacity: 1; }.analysis-ripple { display: none; }.analysis-arm { transform: translate(0,calc(-1 * var(--R))); }.analysis-messages b:first-child { opacity: 1; } }
+
+/* D5: 실제 화면 검수 보정. 렌더 전환에서 브라우저 스크롤 고정을 방지한다. */
+.screen { overflow-anchor: none; }.home-steps .card { margin: 0; }
+.sheet { max-width: 480px; max-height: 90dvh; overflow-y: auto; background: var(--surface-solid); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }

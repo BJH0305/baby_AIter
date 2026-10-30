@@ -75,8 +75,10 @@ function showScreen(name) {
   // 휴대폰에서는 모든 화면의 하단 탭을 유지한다.
   const tabbar = document.getElementById("tabbar");
   if (tabbar) tabbar.hidden = false;
-  window.scrollTo(0, 0);
   render();
+  const content = document.querySelector(`[data-screen="${target}"] .content`);
+  if (content) content.scrollTop = 0;
+  window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", () => {
   closeSheet();
