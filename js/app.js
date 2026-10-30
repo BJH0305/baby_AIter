@@ -169,7 +169,7 @@ function renderLog() {
 function displayTip(text, input) {
   const target = input.answers?.["q-target"];
   if (target === "peer") return text;
-  if (target === "sibling") return text.replace(/친구/g, "동생");
+  if (target === "sibling") return text.replace(/친구가/g, "동생이").replace(/친구를/g, "동생을").replace(/친구는/g, "동생은").replace(/친구와/g, "동생과").replace(/친구/g, "동생");
   return text.replace(/친구(?:에게|한테|의|가|를|와|는|도)?\s*/g, "").replace(/ {2,}/g, " ").trim();
 }
 // 첫 화면에는 요약만 표시하고, 선택 답변·AI 설명·원문 근거는 접어 둔다.
