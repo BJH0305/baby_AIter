@@ -48,7 +48,7 @@ function saveData(data) {
 }
 // 위험 신호나 14일 이상 효과 없음 기록이 있으면 답변보다 규칙을 우선한다.
 function applySafety(answer, input, feedback = [], today = new Date()) {
-  const text = `${input.text || ""} ${input.situation || ""}`;
+  const text = `${input.text || ""} ${input.situation || ""} ${Object.values(input.otherAnswers || {}).join(" ")}`;
   const dangerAnswer = input.answers?.["q-condition"] === "injury" || (window.QUESTIONS || []).some((q) => q.options.some((o) => o.danger && input.answers?.[q.id] === o.value));
   const hasFlag = dangerAnswer || (window.KNOWLEDGE || []).some((card) => (card.redFlagKeywords || []).some((flag) => text.includes(flag)));
   const dates = feedback.map((entry) => entry.date).filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date)).sort();
@@ -280,6 +280,7 @@ document.addEventListener("click", (event) => {
   if (event.target.closest("[data-start-quiz]")) {
     quizIndex = 0;
     for (const id of Object.keys(quizAnswers)) delete quizAnswers[id];
+    for (const id of Object.keys(quizOtherAnswers)) delete quizOtherAnswers[id];
     document.getElementById("askText").value = "";
     renderQuiz(); location.hash = "#ask";
   }
@@ -310,7 +311,8 @@ document.querySelector('[data-screen="home"] .topbar h1')?.addEventListener("cli
   titleTaps += 1;
   if (titleTaps < 5) return;
   titleTaps = 0;
-  if (saveData(demoData())) { currentConsultId = null; quizIndex = 0; for (const id of Object.keys(quizAnswers)) delete quizAnswers[id]; document.getElementById("askText").value = ""; renderQuiz(); render(); toast("예시 데이터로 초기화했어요"); }
+  if (saveData(demoData())) { currentConsultId = null; quizIndex = 0; for (const id of Object.keys(quizAnswers)) delete quizAnswers[id]; for (const id of Object.keys(quizOtherAnswers)) delete quizOtherAnswers[id];
+    document.getElementById("askText").value = ""; renderQuiz(); render(); toast("예시 데이터로 초기화했어요"); }
   else toast("초기화하지 못했어요");
 });
 
@@ -341,7 +343,7 @@ document.getElementById("askForm")?.addEventListener("submit", async (event) => 
   event.preventDefault();
   const form = event.currentTarget;
   const loading = document.getElementById("askLoading");
-  if (quizIndex !== window.QUESTIONS.length || window.QUESTIONS.some((q) => !quizAnswers[q.id])) return;
+  if (quizIndex !== window.QUESTIONS.length || window.QUESTIONS.some((q) => !isQuizAnswered(q))) return;
   const input = getQuizInput();
   if (!Number.isInteger(input.ageMonths) || input.ageMonths < 24 || input.ageMonths > 47) { toast("24~47개월 대상이에요. 프로필을 확인해 주세요"); return; }
   form.hidden = true;
@@ -370,16 +372,19 @@ document.getElementById("askForm")?.addEventListener("submit", async (event) => 
 // 질문 답변은 뒤로 가도 유지하며 미응답 상태에서는 진행하지 않는다.
 let quizIndex = 0;
 const quizAnswers = {};
+const quizOtherAnswers = {};
+function isQuizAnswered(q) { return Boolean(quizAnswers[q.id]) && (quizAnswers[q.id] !== "other" || Boolean(quizOtherAnswers[q.id]?.trim())); }
 function getQuizInput() {
   const selected = (id) => window.QUESTIONS.find((q) => q.id === id)?.options.find((o) => o.value === quizAnswers[id])?.label || "";
-  return { answers: { ...quizAnswers }, target: selected("q-target"), situation: selected("q-situation"), text: document.getElementById("askText").value.trim(), ageMonths: getProfile().ageMonths };
+  return { answers: { ...quizAnswers }, otherAnswers: { ...quizOtherAnswers }, target: selected("q-target"), situation: selected("q-situation"), text: document.getElementById("askText").value.trim(), ageMonths: getProfile().ageMonths };
 }
 function renderQuiz() {
   const questions = window.QUESTIONS, question = questions[quizIndex], done = !question;
-  document.getElementById("questionContent").innerHTML = `<p class="section">${done ? questions.length : quizIndex + 1} / ${questions.length}</p><div class="progress" role="progressbar" aria-label="질문 진행" aria-valuemin="0" aria-valuemax="${questions.length}" aria-valuenow="${quizIndex}"><i style="width:calc(100% * ${quizIndex} / ${questions.length})"></i></div>` + (done ? '<h2 class="title-md section">질문에 모두 답했어요</h2><p>덧붙일 내용이 있으면 메모해 주세요.</p>' : `<h2 class="title-md section" id="questionTitle">${esc(question.title)}</h2>${question.help ? `<p class="muted section">${esc(question.help)}</p>` : ""}<div role="group" aria-labelledby="questionTitle">${question.options.map((o) => `<div class="field"><button type="button" class="btn ${quizAnswers[question.id] === o.value ? "btn-primary" : "btn-secondary"} btn-block" data-answer="${o.value}" aria-pressed="${quizAnswers[question.id] === o.value}">${esc(o.label)}</button></div>`).join("")}</div>`);
+  document.getElementById("questionContent").innerHTML = `<p class="section">${done ? questions.length : quizIndex + 1} / ${questions.length}</p><div class="progress" role="progressbar" aria-label="질문 진행" aria-valuemin="0" aria-valuemax="${questions.length}" aria-valuenow="${quizIndex}"><i style="width:calc(100% * ${quizIndex} / ${questions.length})"></i></div>` + (done ? '<h2 class="title-md section">질문에 모두 답했어요</h2><p>특별한 상황이 있으면 적어 주세요.</p>' : `<h2 class="title-md section" id="questionTitle">${esc(question.title)}</h2>${question.help ? `<p class="muted section">${esc(question.help)}</p>` : ""}<div role="group" aria-labelledby="questionTitle">${question.options.map((o) => `<div class="field"><button type="button" class="btn ${quizAnswers[question.id] === o.value ? "btn-primary" : "btn-secondary"} btn-block" data-answer="${o.value}" aria-pressed="${quizAnswers[question.id] === o.value}">${esc(o.label)}</button></div>`).join("")}</div>`);
+  if (!done && quizAnswers[question.id] === "other") document.getElementById("questionContent").innerHTML += `<div class="field"><label class="label" for="quizOther">기타 직접 입력</label><input class="input" id="quizOther" maxlength="40" value="${esc(quizOtherAnswers[question.id] || "")}" placeholder="직접 입력해 주세요" /></div>`;
   document.getElementById("quizBack").hidden = quizIndex === 0;
   document.getElementById("quizNext").hidden = done;
-  document.getElementById("quizNext").disabled = !done && !quizAnswers[question.id];
+  document.getElementById("quizNext").disabled = !done && !isQuizAnswered(question);
   document.getElementById("quizSubmit").hidden = !done;
   document.getElementById("quizNote").hidden = !done;
   document.getElementById("modeField").hidden = !done || window.APP_CONFIG?.AI_MODE !== "live";
@@ -390,8 +395,13 @@ document.getElementById("questionContent").addEventListener("click", (e) => {
   quizAnswers[window.QUESTIONS[quizIndex].id] = option.dataset.answer;
   renderQuiz();
 });
+document.getElementById("questionContent").addEventListener("input", (event) => {
+  if (event.target.id !== "quizOther") return;
+  quizOtherAnswers[window.QUESTIONS[quizIndex].id] = event.target.value;
+  document.getElementById("quizNext").disabled = !isQuizAnswered(window.QUESTIONS[quizIndex]);
+});
 document.getElementById("quizNext").addEventListener("click", () => {
-  if (!quizAnswers[window.QUESTIONS[quizIndex]?.id]) return;
+  if (!isQuizAnswered(window.QUESTIONS[quizIndex])) return;
   quizIndex += 1; renderQuiz();
 });
 document.getElementById("quizBack").addEventListener("click", () => { quizIndex = Math.max(0, quizIndex - 1); renderQuiz(); });

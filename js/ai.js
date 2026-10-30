@@ -125,7 +125,9 @@ async function askCauseAI(input, requestedMode = "fast") {
   const controller = new AbortController();
   try {
     if (!config.API_URL) throw new Error("no endpoint");
-    const selectedAnswers = window.QUESTIONS.map((q) => ({ question: q.title, answer: q.options.find((o) => o.value === input.answers?.[q.id])?.label || "잘 모르겠어요" }));
+    // Worker의 7항목 한도 안에서 안전·컨디션을 묶되 직접 입력 문자열은 그대로 전달한다.
+    const answerText = (q) => input.answers?.[q.id] === "other" ? (input.otherAnswers?.[q.id] || "") : (q.options.find((o) => o.value === input.answers?.[q.id])?.label || "잘 모르겠어요");
+    const selectedAnswers = window.QUESTIONS.filter((q) => q.id !== "q-condition").map((q) => ({ question: q.title, answer: q.id === "q-safety" ? `안전: ${answerText(q)} / 컨디션: ${answerText(window.QUESTIONS.find((item) => item.id === "q-condition"))}` : answerText(q) }));
     const request = fetch(config.API_URL, { method: "POST", headers: { "Content-Type": "application/json" }, signal: controller.signal,
       body: JSON.stringify({ task: "cause", mode, input: { ageMonths: input.ageMonths, answers: selectedAnswers, text: input.text || "" }, cards: base._meta.cards.map(({ id, title, clues, explain, evidence }) => ({ id, title, clues, explain, evidence })), candidates: base.candidates })
     }).then(async (res) => { if (!res.ok) throw new Error("request failed"); return res.json(); });

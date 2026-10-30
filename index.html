@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap" />
-  <link rel="stylesheet" href="css/styles.css?v=feedback-F2" />
+  <link rel="stylesheet" href="css/styles.css?v=feedback-F3" />
   <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 </head>
 <body>
@@ -28,7 +28,7 @@
         <form id="askForm">
           <p class="muted section" id="askAge"></p>
           <div id="questionContent" aria-live="polite"></div>
-          <div class="field" id="quizNote" hidden><label class="label" for="askText">추가 메모 (선택)</label><input class="input" id="askText" maxlength="300" placeholder="시간과 직전 상황 등을 한 줄로 적어 주세요" /></div>
+          <div class="field" id="quizNote" hidden><label class="label" for="askText">추가 메모 (선택)</label><input class="input" id="askText" maxlength="300" placeholder="특별한 상황이 있으면 적어 주세요" /></div>
           <div class="field" id="modeField" hidden><span class="label">답변 방식</span><div class="chips" id="modeChips"><button type="button" class="chip on" data-value="fast" aria-pressed="true">빠른 답변</button><button type="button" class="chip" data-value="deep" aria-pressed="false">깊게 생각하기</button></div></div>
           <div class="section"><button class="btn btn-secondary" id="quizBack" type="button" hidden>이전 질문</button></div>
           <button class="btn btn-primary btn-block" id="quizNext" type="button" disabled>다음</button>
@@ -54,11 +54,11 @@
   <div class="sheet-backdrop" id="sheetBackdrop"></div>
   <div class="sheet" id="sheet"><div id="sheetBody"></div><button class="btn btn-ghost btn-block" id="sheetClose">닫기</button></div>
   <div class="toast" id="toast"></div>
-  <script src="js/knowledge.js?v=feedback-F2"></script>
-  <script src="js/mock.js?v=feedback-F2"></script>
-  <script src="js/config.js?v=feedback-F2"></script>
-  <script src="js/questions.js?v=feedback-F2"></script>
-  <script src="js/ai.js?v=feedback-F2"></script>
-  <script src="js/app.js?v=feedback-F2"></script>
+  <script src="js/knowledge.js?v=feedback-F3"></script>
+  <script src="js/mock.js?v=feedback-F3"></script>
+  <script src="js/config.js?v=feedback-F3"></script>
+  <script src="js/questions.js?v=feedback-F3"></script>
+  <script src="js/ai.js?v=feedback-F3"></script>
+  <script src="js/app.js?v=feedback-F3"></script>
 </body>
 </html>
