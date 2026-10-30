@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>분석 중 애니메이션 (참고 구현)</title>
+<!--
+  베이비 AI터 — "분석 중" 로딩 애니메이션 참고 구현 (A안)
+  1) 0.0s  가운데 아기 아이콘이 '팡' 커지며 등장 + 물결 링 퍼짐
+  2) 0.25s 원인 6개 아이콘이 가운데에서 바깥 궤도로 튀어나옴 (0.07s 간격)
+  3) 1.0s~ 궤도 전체가 천천히 회전(24초/바퀴), 아이콘은 똑바로 유지
+           아이콘이 차례로 하나씩 강조(근거와 비교하는 느낌), 상태 문구가 바뀜
+  - prefers-reduced-motion: 회전·튀어나오기 없이 정지 상태로 표시
+  - 실제 앱에서는 .loader 를 AI 요청 동안 보여 주고, 응답이 오면 제거하면 됨
+-->
+<style>
+:root{--ink:#1d2a24;--muted:#5f6e66;--accent:#2f6a52;--soft:#e2ede5;--line:#cbdacf;--bg:#f1f5f0}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:linear-gradient(135deg,#f1f5f0,#eaf0f1);font-family:'Noto Sans KR','Noto Sans CJK KR',sans-serif;color:var(--ink)}
+.ic{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.loader{--R:150px;--size:380px;display:flex;flex-direction:column;align-items:center;gap:28px}
+.stage{position:relative;width:var(--size);height:var(--size)}
+.ring{position:absolute;inset:calc(50% - var(--R));border-radius:50%;border:1px solid var(--line);opacity:0;animation:fade .6s .5s forwards}
+.ring.dash{inset:calc(50% - var(--R) + 56px);border-style:dashed;opacity:0;animation:fade .6s .7s forwards}
+/* 가운데 */
+.core{position:absolute;left:50%;top:50%;width:112px;height:112px;margin:-56px 0 0 -56px;border-radius:50%;background:#fff;color:var(--accent);display:grid;place-items:center;box-shadow:0 16px 40px rgba(47,106,82,.18);animation:pop .55s cubic-bezier(.2,1.6,.4,1) both}
+.core .ic{width:44px;height:44px;stroke-width:1.6}
+.ripple{position:absolute;left:50%;top:50%;width:112px;height:112px;margin:-56px 0 0 -56px;border-radius:50%;border:2px solid var(--accent);opacity:0;animation:ripple 1.8s .1s ease-out infinite}
+.ripple.r2{animation-delay:1s}
+/* 궤도 */
+.orbit{position:absolute;inset:0;animation:spin 24s 1s linear infinite}
+.node{position:absolute;left:50%;top:50%;width:0;height:0;transform:rotate(var(--a))}
+.node .arm{position:absolute;transform:translate(0,0);animation:burst .6s cubic-bezier(.2,1.4,.4,1) both;animation-delay:calc(.25s + var(--i)*.07s)}
+.node .face{position:absolute;left:0;top:0;width:0;height:0;transform:rotate(calc(-1*var(--a)));animation:counter 24s 1s linear infinite}
+.node .chip{position:absolute;left:-26px;top:-26px;width:52px;height:52px;border-radius:16px;background:#fff;color:var(--accent);display:grid;place-items:center;box-shadow:0 8px 24px rgba(47,106,82,.16);animation:glow 3.6s calc(1.2s + var(--i)*.6s) ease-in-out infinite}
+.node .lbl{position:absolute;left:-30px;width:60px;text-align:center;top:32px;font-size:12px;color:var(--muted);white-space:nowrap}
+/* 문구 */
+.status{text-align:center;min-height:56px}
+.status b{display:block;font-size:20px}
+.status span{color:var(--muted);font-size:14px}
+.msgs{position:relative;width:320px;height:30px;overflow:hidden}
+.msgs b{position:absolute;left:0;right:0;opacity:0;animation:msg 7.5s infinite}
+.msgs b:nth-child(2){animation-delay:2.5s}.msgs b:nth-child(3){animation-delay:5s}
+.dots i{display:inline-block;width:6px;height:6px;margin:0 3px;border-radius:50%;background:var(--accent);opacity:.25;animation:dot 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
+@keyframes pop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.15);opacity:1}100%{transform:scale(1)}}
+@keyframes ripple{0%{transform:scale(1);opacity:.45}100%{transform:scale(2.6);opacity:0}}
+@keyframes burst{0%{transform:translate(0,0) scale(.2);opacity:0}100%{transform:translate(0,calc(-1*var(--R))) scale(1);opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes counter{from{transform:rotate(calc(-1*var(--a)))}to{transform:rotate(calc(-1*var(--a) - 360deg))}}
+@keyframes glow{0%,20%,100%{background:#fff;color:var(--accent)}4%,14%{background:var(--accent);color:#fff}}
+@keyframes fade{to{opacity:1}}
+@keyframes msg{0%{opacity:0;transform:translateY(10px)}6%,30%{opacity:1;transform:none}36%,100%{opacity:0;transform:translateY(-10px)}}
+@keyframes dot{0%,100%{opacity:.25}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important}
+  .ring,.ring.dash{opacity:1}.ripple{display:none}
+  .node .arm{transform:translate(0,calc(-1*var(--R)))}
+  .msgs b:first-child{opacity:1}
+}
+@media (max-width:480px){.loader{--R:112px;--size:290px}.core{width:92px;height:92px;margin:-46px 0 0 -46px}.ripple{width:92px;height:92px;margin:-46px 0 0 -46px}}
+</style></head>
+<body>
+<div class="loader" role="status" aria-live="polite">
+  <div class="stage">
+    <div class="ring"></div><div class="ring dash"></div>
+    <div class="ripple"></div><div class="ripple r2"></div>
+    <div class="orbit" id="orbit"></div>
+    <div class="core"><svg class="ic" viewBox="0 0 24 24"><path d="M9 12h.01"/><path d="M15 12h.01"/><path d="M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5"/><path d="M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1"/></svg></div>
+  </div>
+  <div class="status">
+    <div class="msgs"><b>답변을 정리하고 있어요</b><b>공공기관 자료와 비교하고 있어요</b><b>원인 후보를 고르고 있어요</b></div>
+    <div class="dots"><i></i><i></i><i></i></div>
+  </div>
+</div>
+<script>
+// 원인 유형 7개 중 대표 6개 (Lucide 아이콘 경로) — 실제 앱에서는 lucide 아이콘 이름으로 대체 가능
+const P={msg:'<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',moon:'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',home:'<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',puzzle:'<path d="M19.439 7.85c-.049.322.059.648.289.878l1.568 1.568c.47.47.706 1.087.706 1.704s-.235 1.233-.706 1.704l-1.611 1.611a.98.98 0 0 1-.837.276c-.47-.07-.802-.48-.968-.925a2.501 2.501 0 1 0-3.214 3.214c.446.166.855.497.925.968a.979.979 0 0 1-.276.837l-1.61 1.61a2.404 2.404 0 0 1-1.705.707 2.402 2.402 0 0 1-1.704-.706l-1.568-1.568a1.026 1.026 0 0 0-.877-.29c-.493.074-.84.504-1.02.968a2.5 2.5 0 1 1-3.237-3.237c.464-.18.894-.527.967-1.02a1.026 1.026 0 0 0-.289-.877l-1.568-1.568A2.402 2.402 0 0 1 1.998 12c0-.617.236-1.234.706-1.704L4.23 8.77c.24-.24.581-.353.917-.303.515.077.877.528 1.073 1.01a2.5 2.5 0 1 0 3.259-3.259c-.482-.196-.933-.558-1.01-1.073-.05-.336.062-.676.303-.917l1.525-1.525A2.402 2.402 0 0 1 12 1.998c.617 0 1.234.236 1.704.706l1.568 1.568c.23.23.556.338.877.29.493-.074.84-.504 1.02-.968a2.5 2.5 0 1 1 3.237 3.237c-.464.18-.894.527-.967 1.02Z"/>',smile:'<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01"/><path d="M15 9h.01"/>',users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'};
+const nodes=[['msg','표현'],['moon','피로'],['home','환경'],['puzzle','놀이'],['smile','탐색'],['users','관심']];
+document.getElementById('orbit').innerHTML=nodes.map((n,i)=>`<div class="node" style="--a:${i*60}deg;--i:${i}"><div class="arm"><div class="face"><div class="chip"><svg class="ic" viewBox="0 0 24 24">${P[n[0]]}</svg></div><div class="lbl">${n[1]}</div></div></div></div>`).join('');
+</script>
+</body></html>
