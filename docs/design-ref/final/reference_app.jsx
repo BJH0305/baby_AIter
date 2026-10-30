@@ -1,0 +1,1968 @@
+import React, { useState, useEffect } from 'react';
+import {
+  MessageCircle,
+  Moon,
+  Home as HomeIcon,
+  Puzzle,
+  Smile,
+  Users,
+  Hand,
+  ArrowRight,
+  ArrowLeft,
+  Clock,
+  CheckCircle2,
+  AlertTriangle,
+  BookOpen,
+  Sparkles,
+  Copy,
+  Check,
+  Smartphone,
+  Monitor,
+  ChevronDown,
+  ChevronUp,
+  Edit3,
+  Trash2,
+  Download,
+  Info,
+  X,
+  RotateCcw
+} from 'lucide-react';
+
+// 1. 실제 8문항 데이터 (page_spec.md 엄격 반영)
+const QUESTIONS = [
+  {
+    id: 1,
+    isSafety: true,
+    allowCustom: false,
+    question: '물린 곳에 상처나 피가 났나요?',
+    sub: '상처나 출혈 여부에 따라 먼저 필요한 안전 안내를 함께 드려요.',
+    options: ['예', '아니오']
+  },
+  {
+    id: 2,
+    allowCustom: true,
+    question: '깨물기 바로 전, 어떤 일이 있었나요?',
+    sub: '가장 가까웠던 상황 하나를 골라 주세요.',
+    options: [
+      '놀잇감을 가져가거나 만졌어요',
+      '스스로 하려던 일을 제지했어요',
+      '놀이에 흥분하거나 깨물기를 따라 했어요',
+      '잘 모르겠어요',
+      '기타(직접 입력)'
+    ]
+  },
+  {
+    id: 3,
+    allowCustom: true,
+    question: '누구를 깨물었나요?',
+    sub: '대상에 따라 아이가 느낀 감정이나 상황이 다를 수 있어요.',
+    options: ['친구', '형제자매', '보호자·어른', '잘 모르겠어요', '기타(직접 입력)']
+  },
+  {
+    id: 4,
+    allowCustom: true,
+    question: '어디에서 일어났나요?',
+    sub: '익숙한 공간인지, 자극이 많은 공간인지 살펴봐요.',
+    options: ['집', '어린이집', '그 밖의 장소', '잘 모르겠어요', '기타(직접 입력)']
+  },
+  {
+    id: 5,
+    allowCustom: true,
+    question: '깨물기 직전 컨디션은 어땠나요?',
+    sub: '신체적인 피로나 불편함도 큰 영향을 줄 수 있어요.',
+    options: [
+      '피곤하거나 졸려했어요',
+      '배고파했어요',
+      '아픈 곳이 있었어요',
+      '해당 없거나 잘 모르겠어요',
+      '기타(직접 입력)'
+    ]
+  },
+  {
+    id: 6,
+    allowCustom: true,
+    question: '최근 입이나 잇몸에서 이런 모습이 있었나요?',
+    sub: '구강 자극이나 이앓이 여부를 확인해요.',
+    options: [
+      '물건도 씹거나 이가 나며 잇몸이 불편해요',
+      '그런 모습은 없었어요',
+      '잘 모르겠어요',
+      '기타(직접 입력)'
+    ]
+  },
+  {
+    id: 7,
+    allowCustom: true,
+    question: '그때 아이는 어떻게 표현했나요?',
+    sub: '깨물기 직전이나 직후의 표현 방식을 떠올려 보세요.',
+    options: [
+      '원하는 것을 말로 전하기 어려워했어요',
+      '어른의 관심이나 함께 놀기를 원했어요',
+      '혼자 하거나 직접 고르려 했어요',
+      '잘 모르겠어요',
+      '기타(직접 입력)'
+    ]
+  },
+  {
+    id: 8,
+    allowCustom: true,
+    question: '최근 생활에 달라진 점이 있나요?',
+    sub: '환경 변화는 아이에게 긴장감을 줄 수 있어요.',
+    options: [
+      '동생이 태어났어요',
+      '이사·보호자의 직장 복귀가 있었어요',
+      '어린이집에 새로 다니기 시작했어요',
+      '해당 없거나 잘 모르겠어요',
+      '기타(직접 입력)'
+    ]
+  }
+];
+
+// 2. 원인 7가지 고정 아이콘 및 데이터 (page_spec.md 엄격 반영 - 확률/% 일절 금지)
+const CAUSE_CANDIDATES = [
+  {
+    id: 'frustration',
+    order: 1,
+    title: '좌절·표현 부족',
+    iconType: 'msg',
+    bgTint: '#E6F4EA',
+    accentTint: '#2E6F40',
+    reason: '놀잇감을 친구가 만졌고, 원하는 것을 말로 표현하기 어려워 답답했을 수 있어요.',
+    actions: [
+      '깨문 행동은 짧고 단호하게 "깨물면 아파요, 안 돼요"라고 알려 주세요.',
+      '"내 거라고 말하고 싶었구나"처럼 아이의 마음을 먼저 짧은 말로 대신 표현해 주세요.',
+      '"빌려줘", "잠깐만"처럼 상황에서 바로 쓸 수 있는 짧은 단어를 알려 주세요.'
+    ],
+    evidence: {
+      source: '보건복지부·육아정책연구소 「영유아 문제행동지도를 위한 어린이집 보육교사 지침서」 p.227',
+      quote: '"영유아는 자신의 요구나 부정적 감정을 언어로 충분히 표현하기 어려울 때 또래를 깨무는 행동을 보일 수 있다."',
+      myAnswers: ['Q2. 놀잇감을 가져가거나 만졌어요', 'Q7. 원하는 것을 말로 전하기 어려워했어요']
+    }
+  },
+  {
+    id: 'fatigue',
+    order: 2,
+    title: '피로·컨디션',
+    iconType: 'moon',
+    bgTint: '#EDE9FE',
+    accentTint: '#5B21B6',
+    reason: '피곤하거나 졸린 상태에서는 평소보다 작은 자극에도 참기 어려워 몸이 먼저 반응할 수 있어요.',
+    actions: [
+      '낮잠 시간 전후나 하원 직후에는 갈등이 생기기 쉬운 놀이를 줄이고 조용한 휴식 시간을 주세요.',
+      '배고픔이나 졸음이 겹치지 않도록 일과 리듬을 미리 살피고 조절해 주세요.'
+    ],
+    evidence: {
+      source: '미국 CHLA Early Connections 「아기가 물면 어떻게 해야 할까요?」 p.1',
+      quote: '"아이들은 피곤하거나 과도한 자극을 받았을 때 자기 조절력이 낮아져 깨무는 행동을 하기 쉽습니다."',
+      myAnswers: ['Q5. 피곤하거나 졸려했어요']
+    }
+  },
+  {
+    id: 'environment',
+    order: 3,
+    title: '환경 변화·스트레스',
+    iconType: 'home',
+    bgTint: '#FEF3C7',
+    accentTint: '#B45309',
+    reason: '동생 출생이나 교실·양육 환경의 변화로 긴장감이 높아져 보호자의 관심을 확인하려 했을 수 있어요.',
+    actions: [
+      '하루 10분이라도 첫째 아이와만 눈을 맞추고 온전히 놀아 주는 시간을 꼭 확보해 주세요.',
+      '변화된 일상 속에서도 아이가 예측할 수 있는 일정한 일과(수면, 식사 의식)를 유지해 주세요.'
+    ],
+    evidence: {
+      source: '2023 양육상담 자료집 「동생이 태어나고 아이가 거칠게 행동해요」 p.17',
+      quote: '"동생의 출생 등 급격한 환경 변화는 영유아에게 심리적 불안을 유발하며 공격적 행동이나 퇴행으로 나타날 수 있다."',
+      myAnswers: ['Q8. 동생이 태어났어요']
+    }
+  }
+];
+
+const INITIAL_RECORDS = [
+  {
+    id: 'rec-1',
+    date: '10월 30일',
+    target: '동생',
+    causes: '관심 끌기 · 환경 변화',
+    feedback: '일부',
+    hasInjury: false
+  },
+  {
+    id: 'rec-2',
+    date: '10월 29일',
+    target: '친구',
+    causes: '좌절·표현 부족 · 피로·컨디션',
+    feedback: '맞아요',
+    hasInjury: true
+  },
+  {
+    id: 'rec-3',
+    date: '10월 28일',
+    target: '친구',
+    causes: '피로·컨디션',
+    feedback: '확인 전',
+    hasInjury: false
+  }
+];
+
+// 고정 7가지 원인 아이콘 렌더러
+function CauseIcon({ type, size = 20, className = '' }) {
+  switch (type) {
+    case 'msg':
+      return <MessageCircle size={size} className={className} />;
+    case 'moon':
+      return <Moon size={size} className={className} />;
+    case 'home':
+      return <HomeIcon size={size} className={className} />;
+    case 'puzzle':
+      return <Puzzle size={size} className={className} />;
+    case 'smile':
+      return <Smile size={size} className={className} />;
+    case 'users':
+      return <Users size={size} className={className} />;
+    case 'hand':
+      return <Hand size={size} className={className} />;
+    default:
+      return <MessageCircle size={size} className={className} />;
+  }
+}
+
+export default function App() {
+  // 페이지 상태: 'home' | 'quiz' | 'memo' | 'loading' | 'result' | 'records'
+  const [activePage, setActivePage] = useState('home');
+  const [viewport, setViewport] = useState('pc'); // 'pc' (1280px) | 'mobile' (375px)
+  const [homeStyle, setHomeStyle] = useState('10_playful'); // '10_playful' | '02_split'
+
+  // 프로필 상태
+  const [profile, setProfile] = useState({ name: '도윤', months: 38 });
+  const [isProfileSheetOpen, setIsProfileSheetOpen] = useState(false);
+  const [profileForm, setProfileForm] = useState({ name: '도윤', months: '38' });
+  const [confirmResetStep, setConfirmResetStep] = useState(false);
+
+  // 기록 상태
+  const [records, setRecords] = useState(INITIAL_RECORDS);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
+
+  // 질문 검사 상태
+  const [qIndex, setQIndex] = useState(0);
+  const [answers, setAnswers] = useState({
+    1: '아니오',
+    2: '놀잇감을 가져가거나 만졌어요',
+    3: '친구',
+    4: '어린이집',
+    5: '피곤하거나 졸려했어요',
+    6: '그런 모습은 없었어요',
+    7: '원하는 것을 말로 전하기 어려워했어요',
+    8: '동생이 태어났어요'
+  });
+  const [customInputs, setCustomInputs] = useState({});
+  const [extraMemo, setExtraMemo] = useState('');
+
+  // 결과 화면 세부 상태 (데모 컨트롤 포함)
+  const [openEvidence, setOpenEvidence] = useState({ frustration: true });
+  const [mobileAnswersOpen, setMobileAnswersOpen] = useState(false);
+  const [resultFeedback, setResultFeedback] = useState('맞아요');
+  const [explanationMode, setExplanationMode] = useState('AI 설명'); // 'AI 설명' | '기본 설명'
+  const [isEmptyResultDemo, setIsEmptyResultDemo] = useState(false);
+
+  // 토스트 알림
+  const [toastMsg, setToastMsg] = useState(null);
+  const [copiedPrompt, setCopiedPrompt] = useState(false);
+
+  const showToast = (msg) => {
+    setToastMsg(msg);
+  };
+
+  useEffect(() => {
+    if (!toastMsg) return;
+    const t = setTimeout(() => setToastMsg(null), 2600);
+    return () => clearTimeout(t);
+  }, [toastMsg]);
+
+  // 현재 문항 검증
+  const currentQ = QUESTIONS[qIndex];
+  const selectedAns = answers[currentQ.id];
+  const isCustomSelected = selectedAns === '기타(직접 입력)';
+  const currentCustomText = customInputs[currentQ.id] || '';
+  const canProceedQuiz = Boolean(
+    selectedAns && (!isCustomSelected || currentCustomText.trim().length > 0)
+  );
+
+  // 상처 있음 여부 (Q1 === '예')
+  const hasSafetyAlert = answers[1] === '예';
+
+  // 프로필 저장 핸들러
+  const handleSaveProfile = (e) => {
+    e.preventDefault();
+    const m = parseInt(profileForm.months, 10);
+    if (!profileForm.name.trim() || isNaN(m) || m < 12 || m > 59) {
+      showToast('개월 수는 12~59개월 사이로 입력해 주세요');
+      return;
+    }
+    setProfile({ name: profileForm.name.trim(), months: m });
+    setIsProfileSheetOpen(false);
+    setConfirmResetStep(false);
+    showToast('프로필을 저장했어요');
+  };
+
+  // 전체 기록 초기화 핸들러
+  const handleResetAllRecords = () => {
+    setRecords([]);
+    setConfirmResetStep(false);
+    setIsProfileSheetOpen(false);
+    showToast('전체 기록을 초기화했어요');
+  };
+
+  // 개별 기록 삭제 핸들러
+  const handleConfirmDelete = () => {
+    if (!deleteTargetId) return;
+    setRecords((prev) => prev.filter((r) => r.id !== deleteTargetId));
+    setDeleteTargetId(null);
+    showToast('기록을 삭제했어요');
+  };
+
+  // 피드백 저장
+  const handleSelectFeedback = (val) => {
+    setResultFeedback(val);
+    showToast('결과에 대한 답변을 저장했어요');
+  };
+
+  // Codex용 지시서 복사
+  const handleCopyPrompt = () => {
+    const specPrompt = `[베이비 AI터 — 전체 디자인 개편 지시서]
+기존 기능과 데이터는 그대로 유지하고, 아래 디자인 시스템 및 페이지별 규칙으로 전체 UI를 개편해 주세요.
+
+1. 디자인 토큰 (CSS Variables)
+:root {
+  --bg: #FAF6F0;          /* 따뜻한 크림 베이지 배경 (연녹색 그라데이션 완전 제거) */
+  --surface: #FFFFFF;     /* 카드/시트 배경 */
+  --ink: #1E1D1A;         /* 본문/제목 진한 차콜 */
+  --muted: #6E6A63;       /* 보조 텍스트 */
+  --line: #E8E1D5;        /* 구분선 */
+  --accent: #F4C44E;      /* 메인 포인트 (10번 도형 플레이풀 웜 옐로우) */
+  --accent-dark: #2B5B44; /* 02번 스플릿 딥 그린 보조 포인트 */
+  --coral: #F5A391;       /* 아기 원형 도형 코랄 */
+  --mint: #A3D4C0;        /* 말풍선 도형 민트 */
+  --lavender: #C6B9F7;    /* 달 도형 라벤더 */
+  --font-sans: 'Pretendard', -apple-system, sans-serif;
+}
+
+2. 반응형 레이아웃 규칙
+- PC(1280px 기준): 최대 폭 1160px, 상단 GNB(홈 / 질문 검사 / 기록 + 아이 프로필 수정 버튼), 좌우 2단 분할 레이아웃 적극 활용 (좁은 모바일 뷰처럼 보이지 않게 넓게 사용)
+- 폰(375px 기준): 1열 세로 배치 + 하단 고정 탭바(홈 / 질문 검사 / 기록)
+
+3. 페이지별 필수 반영 사항 (page_spec.md 준수)
+- 공통: "진단", 질환명, 확률(%) 표시 절대 금지. 항상 "가능성이 높은 원인 후보 · 진단이 아닌 안내" 명시.
+- ① 홈: 질문 미리 노출 금지. "검사 시작하기" 메인 CTA + 우측 아기/원인 도형 일러스트 + 하단 최근 검사 2~3건(빈 상태 포함).
+- ② 질문 검사(8문항): 1문항씩 표시, Q1 안전 질문(기타 없음), Q2~Q8 "기타(직접 입력)" 선택 시 입력칸 노출(비어 있으면 다음 불가), 8문항 완료 후 추가 메모(선택) 화면.
+- ③ 분석 중: loading_animation.html 구현 그대로 적용(0.0s 아기 아이콘 pop + ripple -> 0.25s 6개 원인 아이콘 궤도 burst -> 24s 회전 및 순차 glow + 3단계 상태 문구 전환).
+- ④ 결과: Q1='예'일 때 최상단 상처 안전 안내 박스 배치. 원인 후보 1~3번(확률/% 없이 번호만), 공공기관 근거 아코디언(기관·자료명·쪽수·원문·내 답변), PC 우측/폰 접기형 내 답변 요약, "결과가 맞았나요?(맞아요/일부/아니에요)" 1탭 저장, 빈 결과 상태 대응.
+- ⑤ 기록 & 시트 2종: 기기 로컬 저장 안내, 프로필 수정 시트(12~59개월 + 전체 기록 초기화 2차 확인), 삭제 확인 시트 및 토스트 알림.`;
+    navigator.clipboard.writeText(specPrompt);
+    setCopiedPrompt(true);
+    showToast('Codex 전달용 전체 지시서를 복사했어요');
+    setTimeout(() => setCopiedPrompt(false), 2500);
+  };
+
+  // HTML 단일 파일 다운로드 (docs/design-ref/ 저장용)
+  const handleDownloadHtml = () => {
+    const htmlContent = `<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>베이비 AI터 — 통합 디자인 레퍼런스 (PC 1280px · 폰 375px)</title>
+<style>
+:root {
+  --bg: #FAF6F0;
+  --surface: #FFFFFF;
+  --ink: #1E1D1A;
+  --muted: #6E6A63;
+  --line: #E8E1D5;
+  --accent: #F4C44E;
+  --accent-ink: #1E1D1A;
+  --deep-green: #234E3C;
+  --coral: #F5A391;
+  --mint: #A3D4C0;
+  --lavender: #C6B9F7;
+  --danger-bg: #FFF5F2;
+  --danger-line: #F5C2B4;
+  --danger-ink: #9A3412;
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --space-sm: 12px;
+  --space-md: 20px;
+  --space-lg: 36px;
+  --font: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); line-height: 1.5; }
+.container { max-width: 1160px; margin: 0 auto; padding: 24px 32px 64px; }
+header { display: flex; justify-content: space-between; align-items: center; padding: 16px 0 32px; border-bottom: 1px solid var(--line); }
+.brand { font-weight: 900; font-size: 20px; }
+.hero { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 40px; align-items: center; padding: 48px 0; }
+.hl { background: var(--accent); padding: 2px 10px; border-radius: 10px; }
+.cta { display: inline-flex; align-items: center; gap: 12px; background: var(--ink); color: #fff; padding: 16px 32px; border-radius: 999px; font-weight: 700; text-decoration: none; border: 0; cursor: pointer; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 28px; }
+@media (max-width: 768px) {
+  .container { max-width: 375px; padding: 16px 16px 88px; }
+  .hero { grid-template-columns: 1fr; padding: 24px 0; }
+}
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">베이비 AI터</div>
+      <div>도윤 · 38개월 (프로필 수정)</div>
+    </header>
+    <section class="hero">
+      <div>
+        <h1 style="font-size:44px;margin:0 0 16px;letter-spacing:-0.03em;">아이가 왜 깨물었는지<br><span class="hl">같이 찾아봐요</span></h1>
+        <p style="color:var(--muted);font-size:17px;margin:0 0 28px;">상황 질문 8개에 답하면 공공기관 자료에서 가능성 높은 이유와 대응 방법을 정리해 드려요.</p>
+        <button class="cta">검사 시작하기 →</button>
+        <p style="font-size:13px;color:var(--muted);margin-top:20px;">· 공공기관 자료 근거 &nbsp; · 진단이 아닌 안내</p>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0;">최근 검사 기록</h3>
+        <p style="color:var(--muted);font-size:14px;">10월 30일 · 동생 · 관심 끌기, 환경 변화 (일부 맞음)</p>
+        <p style="color:var(--muted);font-size:14px;">10월 29일 · 친구 · 좌절·표현 부족, 피로 (맞음)</p>
+      </div>
+    </section>
+  </div>
+</body>
+</html>`;
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'babyaiter_design_reference.html';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('단일 HTML 레퍼런스 파일을 다운로드했어요');
+  };
+
+  const isMobile = viewport === 'mobile';
+
+  return (
+    <div className="min-h-screen bg-[#EAE4DC] text-[#1E1D1A] font-sans pb-14">
+      {/* `loading_animation.html` 원본 키프레임 & 스타일 완벽 이식 */}
+      <style>{`
+        @keyframes babyPop {
+          0% { transform: scale(0); opacity: 0; }
+          60% { transform: scale(1.15); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes babyRipple {
+          0% { transform: scale(1); opacity: 0.45; }
+          100% { transform: scale(2.55); opacity: 0; }
+        }
+        @keyframes orbitBurst {
+          0% { transform: translate(0, 0) scale(0.2); opacity: 0; }
+          100% { transform: translate(0, calc(-1 * var(--R))) scale(1); opacity: 1; }
+        }
+        @keyframes orbitSpin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes orbitCounter {
+          from { transform: rotate(calc(-1 * var(--a))); }
+          to { transform: rotate(calc(-1 * var(--a) - 360deg)); }
+        }
+        @keyframes chipGlow {
+          0%, 20%, 100% { background: #FFFFFF; color: #1E1D1A; transform: scale(1); border-color: #E8E1D5; }
+          4%, 14% { background: #1E1D1A; color: #F4C44E; transform: scale(1.12); border-color: #1E1D1A; }
+        }
+        @keyframes statusMsgCycle {
+          0% { opacity: 0; transform: translateY(10px); }
+          6%, 30% { opacity: 1; transform: translateY(0); }
+          36%, 100% { opacity: 0; transform: translateY(-10px); }
+        }
+        @keyframes dotPulse {
+          0%, 100% { opacity: 0.25; }
+          50% { opacity: 1; }
+        }
+        @keyframes floatSlow {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-6px); }
+        }
+      `}</style>
+
+      {/* =====================================================================
+          상단 레퍼런스 컨트롤러 바 (시안 테스트 및 내보내기 도구)
+      ===================================================================== */}
+      <div className="sticky top-0 z-50 bg-[#181715] text-white px-4 py-2.5 shadow-md border-b border-white/10">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2">
+            <span className="px-2 py-0.5 text-[11px] font-bold bg-[#F4C44E] text-[#1E1D1A] rounded">
+              page_spec 완벽 반영
+            </span>
+            <span className="text-xs sm:text-sm font-semibold tracking-tight text-white/90">
+              베이비 AI터 디자인 레퍼런스
+            </span>
+          </div>
+
+          {/* 5개 화면 + 추가 메모 바로가기 */}
+          <div className="flex items-center bg-white/10 p-1 rounded-lg gap-0.5 overflow-x-auto">
+            {[
+              { id: 'home', label: '① 홈' },
+              { id: 'quiz', label: '② 질문(8문항)' },
+              { id: 'memo', label: '②-2 추가 메모' },
+              { id: 'loading', label: '③ 분석 중(원본이식)' },
+              { id: 'result', label: '④ 결과' },
+              { id: 'records', label: '⑤ 기록' }
+            ].map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setActivePage(t.id)}
+                className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
+                  activePage === t.id
+                    ? 'bg-[#F4C44E] text-[#1E1D1A] font-bold shadow-sm'
+                    : 'text-white/75 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          {/* 홈 스타일 & 화면 크기 & 내보내기 */}
+          <div className="flex items-center gap-1.5">
+            {activePage === 'home' && (
+              <div className="flex items-center bg-white/10 p-1 rounded-lg text-xs">
+                <button
+                  onClick={() => setHomeStyle('10_playful')}
+                  className={`px-2 py-1 rounded transition ${
+                    homeStyle === '10_playful' ? 'bg-white text-[#1E1D1A] font-bold' : 'text-white/70'
+                  }`}
+                >
+                  10 도형플레이풀+기록
+                </button>
+                <button
+                  onClick={() => setHomeStyle('02_split')}
+                  className={`px-2 py-1 rounded transition ${
+                    homeStyle === '02_split' ? 'bg-white text-[#1E1D1A] font-bold' : 'text-white/70'
+                  }`}
+                >
+                  02 스플릿+도형
+                </button>
+              </div>
+            )}
+
+            <div className="flex items-center bg-white/10 p-1 rounded-lg text-xs">
+              <button
+                onClick={() => setViewport('pc')}
+                className={`flex items-center gap-1 px-2 py-1 rounded transition ${
+                  viewport === 'pc' ? 'bg-white text-[#1E1D1A] font-bold' : 'text-white/70'
+                }`}
+              >
+                <Monitor size={13} />
+                <span>PC (1280px)</span>
+              </button>
+              <button
+                onClick={() => setViewport('mobile')}
+                className={`flex items-center gap-1 px-2 py-1 rounded transition ${
+                  viewport === 'mobile' ? 'bg-white text-[#1E1D1A] font-bold' : 'text-white/70'
+                }`}
+              >
+                <Smartphone size={13} />
+                <span>폰 (375px)</span>
+              </button>
+            </div>
+
+            <button
+              onClick={handleDownloadHtml}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white/15 hover:bg-white/25 text-white transition"
+              title="docs/design-ref/ 저장용 HTML 다운로드"
+            >
+              <Download size={13} />
+              <span className="hidden md:inline">HTML 저장</span>
+            </button>
+
+            <button
+              onClick={handleCopyPrompt}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-[#F4C44E] text-[#1E1D1A] hover:bg-[#eab535] transition"
+            >
+              {copiedPrompt ? <Check size={13} /> : <Copy size={13} />}
+              <span>{copiedPrompt ? '복사됨' : 'Codex 지시서'}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* =====================================================================
+          실제 뷰포트 프레임 (PC 1280px 와이드 vs 폰 375px 모바일)
+      ===================================================================== */}
+      <div className="py-6 px-2 sm:px-6 flex justify-center">
+        <div
+          className={`w-full transition-all duration-300 bg-[#FAF6F0] border border-[#DFD7C8] shadow-2xl overflow-hidden relative flex flex-col ${
+            isMobile
+              ? 'max-w-[375px] min-h-[780px] rounded-[36px] border-[8px] border-[#262522]'
+              : 'max-w-[1280px] min-h-[820px] rounded-[24px]'
+          }`}
+        >
+          {/* 토스트 메시지 (우측 상단 또는 상단 중앙) */}
+          {toastMsg && (
+            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 bg-[#1E1D1A] text-white text-xs sm:text-sm font-medium px-4 py-2.5 rounded-full shadow-xl flex items-center gap-2">
+              <CheckCircle2 size={15} className="text-[#F4C44E]" />
+              <span>{toastMsg}</span>
+            </div>
+          )}
+
+          {/* 상단 GNB (PC에서는 전체 메뉴, 폰에서는 심플 헤더 + 하단 탭바) */}
+          <header
+            className={`flex items-center justify-between border-b border-[#ECE5D8] bg-[#FAF6F0]/90 backdrop-blur-sm ${
+              isMobile ? 'px-5 py-3.5' : 'px-12 py-5'
+            }`}
+          >
+            <div className="flex items-center gap-10">
+              <button
+                onClick={() => setActivePage('home')}
+                className="text-lg font-extrabold tracking-tight text-[#1E1D1A] flex items-center gap-1.5"
+              >
+                <span>베이비 AI터</span>
+              </button>
+
+              {!isMobile && (
+                <nav className="flex items-center gap-7 text-sm">
+                  {[
+                    { id: 'home', label: '홈' },
+                    { id: 'quiz', label: '질문 검사' },
+                    { id: 'records', label: '기록' }
+                  ].map((nav) => {
+                    const isCurrent =
+                      activePage === nav.id ||
+                      (nav.id === 'quiz' && (activePage === 'memo' || activePage === 'loading' || activePage === 'result'));
+                    return (
+                      <button
+                        key={nav.id}
+                        onClick={() => setActivePage(nav.id)}
+                        className={`transition py-1 ${
+                          isCurrent
+                            ? 'font-bold text-[#1E1D1A] border-b-2 border-[#1E1D1A]'
+                            : 'text-[#8C857B] hover:text-[#1E1D1A]'
+                        }`}
+                      >
+                        {nav.label}
+                      </button>
+                    );
+                  })}
+                </nav>
+              )}
+            </div>
+
+            {/* 우측 아이 프로필 표시 & 수정 버튼 */}
+            <button
+              onClick={() => {
+                setProfileForm({ name: profile.name, months: String(profile.months) });
+                setConfirmResetStep(false);
+                setIsProfileSheetOpen(true);
+              }}
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium text-[#5C574F] hover:text-[#1E1D1A] bg-white px-3 py-1.5 rounded-full border border-[#E8E1D5] shadow-2xs transition"
+            >
+              <span>
+                {profile.name} · {profile.months}개월
+              </span>
+              <Edit3 size={13} className="text-[#8C857B]" />
+            </button>
+          </header>
+
+          {/* 메인 영역 */}
+          <main className={`flex-1 ${isMobile ? 'px-5 py-6 pb-24' : 'px-12 py-10'}`}>
+            {/* ===============================================================
+                ① 홈 화면 (10_도형플레이풀 기반 or 02_스플릿 기반)
+            =============================================================== */}
+            {activePage === 'home' && (
+              <div className="space-y-10">
+                {homeStyle === '10_playful' ? (
+                  /* 10번 도형 플레이풀 히어로 */
+                  <div
+                    className={`grid gap-8 items-center ${
+                      isMobile ? 'grid-cols-1' : 'grid-cols-12 py-4'
+                    }`}
+                  >
+                    <div className={`${isMobile ? '' : 'col-span-6'} space-y-5`}>
+                      <h1
+                        className={`font-black tracking-tight text-[#1E1D1A] leading-[1.22] ${
+                          isMobile ? 'text-[30px]' : 'text-[46px]'
+                        }`}
+                      >
+                        아이가 왜 깨물었는지
+                        <br />
+                        <span className="inline-block bg-[#F4C44E] px-3 py-0.5 rounded-xl mt-1.5">
+                          같이 찾아봐요
+                        </span>
+                      </h1>
+
+                      <p
+                        className={`text-[#6E6A63] leading-relaxed ${
+                          isMobile ? 'text-sm' : 'text-[17px] max-w-lg'
+                        }`}
+                      >
+                        여기저기 검색하지 않아도 돼요. 상황 질문 8개에 답하면 공공기관 자료에서
+                        가능성 높은 이유와 대응 방법을 정리해 드려요.
+                      </p>
+
+                      <div className="pt-1">
+                        <button
+                          onClick={() => {
+                            setQIndex(0);
+                            setActivePage('quiz');
+                          }}
+                          className="inline-flex items-center gap-3 bg-[#23211E] hover:bg-[#383530] text-white font-bold px-8 py-4 rounded-full text-base shadow-lg transition transform hover:-translate-y-0.5 cursor-pointer"
+                        >
+                          <span>검사 시작하기</span>
+                          <ArrowRight size={18} />
+                        </button>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-[#8C857B] pt-2">
+                        <span>· 공공기관 자료 근거</span>
+                        <span>· 진단이 아닌 안내</span>
+                        <span>· 기록은 이 기기에만 저장</span>
+                      </div>
+                    </div>
+
+                    {/* 10번 도형 일러스트 클러스터 */}
+                    <div
+                      className={`${
+                        isMobile ? 'h-[260px]' : 'col-span-6 h-[380px]'
+                      } relative flex items-center justify-center select-none`}
+                    >
+                      {/* 중앙 코랄 원 + 아기 얼굴 */}
+                      <div
+                        className={`${
+                          isMobile ? 'w-36 h-36' : 'w-56 h-56'
+                        } rounded-full bg-[#F5A391] flex items-center justify-center shadow-inner`}
+                      >
+                        <svg
+                          className={`${isMobile ? 'w-16 h-16' : 'w-24 h-24'} text-[#23211E]`}
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.7"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M9 12h.01" />
+                          <path d="M15 12h.01" />
+                          <path d="M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5" />
+                          <path d="M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1" />
+                        </svg>
+                      </div>
+
+                      {/* 우상단 민트 둥근 사각형 (표현이 어려워서?) */}
+                      <div
+                        style={{ animation: 'floatSlow 4.5s ease-in-out infinite' }}
+                        className={`absolute ${
+                          isMobile ? 'top-1 right-3' : 'top-3 right-8'
+                        } flex flex-col items-center`}
+                      >
+                        <div
+                          className={`${
+                            isMobile ? 'w-16 h-16 rounded-2xl' : 'w-24 h-24 rounded-[26px]'
+                          } bg-[#A3D4C0] rotate-12 flex items-center justify-center shadow-sm`}
+                        >
+                          <MessageCircle
+                            size={isMobile ? 24 : 34}
+                            className="text-[#23211E] -rotate-12"
+                          />
+                        </div>
+                        <span className="-mt-2 bg-white px-3 py-1 rounded-full text-[11px] font-bold text-[#23211E] shadow-md border border-[#F0EAE1]">
+                          표현이 어려워서?
+                        </span>
+                      </div>
+
+                      {/* 좌하단 연보라 원 (피곤해서?) */}
+                      <div
+                        style={{ animation: 'floatSlow 5s ease-in-out 0.6s infinite' }}
+                        className={`absolute ${
+                          isMobile ? 'bottom-3 left-2' : 'bottom-6 left-6'
+                        } flex flex-col items-center`}
+                      >
+                        <span className="mb-1.5 bg-white px-3 py-1 rounded-full text-[11px] font-bold text-[#23211E] shadow-md border border-[#F0EAE1]">
+                          피곤해서?
+                        </span>
+                        <div
+                          className={`${
+                            isMobile ? 'w-14 h-14' : 'w-20 h-20'
+                          } rounded-full bg-[#C6B9F7] flex items-center justify-center shadow-sm`}
+                        >
+                          <Moon size={isMobile ? 20 : 28} className="text-[#23211E]" />
+                        </div>
+                      </div>
+
+                      {/* 우하단 노랑 타원 (환경이 바뀌어서?) */}
+                      <div
+                        style={{ animation: 'floatSlow 4.2s ease-in-out 1.2s infinite' }}
+                        className={`absolute ${
+                          isMobile ? 'bottom-1 right-2' : 'bottom-4 right-8'
+                        } flex flex-col items-center`}
+                      >
+                        <div
+                          className={`${
+                            isMobile ? 'w-16 h-12' : 'w-24 h-18'
+                          } rounded-full bg-[#F4C44E] flex items-center justify-center shadow-sm`}
+                        >
+                          <HomeIcon size={isMobile ? 20 : 28} className="text-[#23211E]" />
+                        </div>
+                        <span className="mt-1.5 bg-white px-3 py-1 rounded-full text-[11px] font-bold text-[#23211E] shadow-md border border-[#F0EAE1]">
+                          환경이 바뀌어서?
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* 02번 스플릿 스타일 + 도형 포인트 조합 */
+                  <div
+                    className={`grid gap-6 ${
+                      isMobile ? 'grid-cols-1' : 'grid-cols-12'
+                    } items-stretch`}
+                  >
+                    <div
+                      className={`${
+                        isMobile ? 'p-6' : 'col-span-5 p-9'
+                      } bg-[#214E3A] text-white rounded-3xl flex flex-col justify-between relative overflow-hidden`}
+                    >
+                      <div className="space-y-4 relative z-10">
+                        <span className="inline-block text-xs font-bold text-[#F4C44E] tracking-wide">
+                          공공기관 육아 자료 기반 안내
+                        </span>
+                        <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl'} font-black leading-tight`}>
+                          깨문 이유,
+                          <br />
+                          질문 8개로
+                          <br />
+                          찾아 드려요
+                        </h1>
+                        <p className="text-sm text-white/80 leading-relaxed">
+                          여기저기 검색하지 않아도 돼요. 공공기관 자료에서 가능성 높은 이유와 대응
+                          방법을 정리해 드려요.
+                        </p>
+                      </div>
+
+                      <div className="pt-8 relative z-10 flex items-center justify-between border-t border-white/15 mt-8">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-[#F4C44E] text-[#1E1D1A] font-black flex items-center justify-center">
+                            {profile.name[0]}
+                          </div>
+                          <div>
+                            <div className="text-xs text-white/70">우리 아이</div>
+                            <div className="text-sm font-bold">
+                              {profile.name} · {profile.months}개월
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setProfileForm({
+                              name: profile.name,
+                              months: String(profile.months)
+                            });
+                            setIsProfileSheetOpen(true);
+                          }}
+                          className="text-xs underline text-white/80 hover:text-white"
+                        >
+                          수정
+                        </button>
+                      </div>
+                    </div>
+
+                    <div
+                      className={`${
+                        isMobile ? 'p-6' : 'col-span-7 p-9'
+                      } bg-white rounded-3xl border border-[#ECE5D8] flex flex-col justify-between space-y-6`}
+                    >
+                      <div className="space-y-3">
+                        <h2 className="text-xl font-extrabold text-[#1E1D1A]">
+                          오늘 깨물기 상황이 있었나요?
+                        </h2>
+                        <p className="text-sm text-[#6E6A63]">
+                          질문은 모두 버튼으로만 답할 수 있어요. 상처 여부부터 차례대로 살펴볼게요.
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          setQIndex(0);
+                          setActivePage('quiz');
+                        }}
+                        className="w-full flex items-center justify-between bg-[#214E3A] hover:bg-[#193d2d] text-white font-bold px-6 py-5 rounded-2xl text-base shadow-md transition cursor-pointer"
+                      >
+                        <div>
+                          <div className="text-base font-bold">검사 시작하기</div>
+                          <div className="text-xs font-normal text-white/75 mt-0.5">
+                            8개 상황 질문 · 약 1분 소요
+                          </div>
+                        </div>
+                        <ArrowRight size={20} />
+                      </button>
+
+                      <div className="grid grid-cols-3 gap-2 pt-2 text-center border-t border-[#F2ECE1]">
+                        <div className="p-2.5 rounded-xl bg-[#FAF6F0]">
+                          <div className="text-xs font-bold text-[#1E1D1A]">1. 질문 8개</div>
+                          <div className="text-[11px] text-[#8C857B]">버튼으로 선택</div>
+                        </div>
+                        <div className="p-2.5 rounded-xl bg-[#FAF6F0]">
+                          <div className="text-xs font-bold text-[#1E1D1A]">2. 원인 후보</div>
+                          <div className="text-[11px] text-[#8C857B]">공공기관 근거 비교</div>
+                        </div>
+                        <div className="p-2.5 rounded-xl bg-[#FAF6F0]">
+                          <div className="text-xs font-bold text-[#1E1D1A]">3. 대응 방법</div>
+                          <div className="text-[11px] text-[#8C857B]">상황별 실천 안내</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 홈 하단: 최근 검사 2~3건 (빈 상태 토글 지원) */}
+                <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#ECE5D8] shadow-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                    <div className="flex items-center gap-2">
+                      <Clock size={16} className="text-[#8C857B]" />
+                      <h2 className="text-base font-extrabold text-[#1E1D1A]">최근 검사</h2>
+                      <span className="text-xs text-[#8C857B]">
+                        ({records.length}건 · 이 기기에만 저장)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() =>
+                          setRecords((prev) => (prev.length > 0 ? [] : INITIAL_RECORDS))
+                        }
+                        className="text-[11px] text-[#8C857B] underline hover:text-[#1E1D1A]"
+                      >
+                        {records.length > 0 ? '[테스트: 빈 기록 상태 보기]' : '[테스트: 샘플 기록 복원]'}
+                      </button>
+                      {records.length > 0 && (
+                        <button
+                          onClick={() => setActivePage('records')}
+                          className="text-xs font-bold text-[#5C574F] hover:text-[#1E1D1A]"
+                        >
+                          전체 기록 보기 →
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {records.length === 0 ? (
+                    <div className="py-8 text-center bg-[#FAF6F0] rounded-2xl border border-dashed border-[#DFD7C8]">
+                      <p className="text-sm font-medium text-[#6E6A63]">
+                        아직 검사 기록이 없어요. 질문에 답하고 원인 후보를 살펴보세요.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-[#F2ECE1]">
+                      {records.slice(0, 3).map((rec) => (
+                        <div
+                          key={rec.id}
+                          onClick={() => setActivePage('result')}
+                          className="py-3.5 flex items-center justify-between gap-3 hover:bg-[#FAF6F0]/60 px-2 rounded-xl transition cursor-pointer"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <span className="text-xs font-semibold text-[#8C857B] w-16 shrink-0">
+                              {rec.date}
+                            </span>
+                            <span className="px-2.5 py-0.5 text-xs font-bold rounded-md bg-[#FAF6F0] text-[#5C574F] border border-[#E8E1D5] shrink-0">
+                              {rec.target}
+                            </span>
+                            <span className="text-sm font-bold text-[#1E1D1A] truncate">
+                              {rec.causes}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span
+                              className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+                                rec.feedback === '맞아요'
+                                  ? 'bg-[#E6F4EA] text-[#2E6F40]'
+                                  : rec.feedback === '일부'
+                                  ? 'bg-[#FEF3C7] text-[#B45309]'
+                                  : 'bg-[#F3EFEA] text-[#8C857B]'
+                              }`}
+                            >
+                              {rec.feedback === '일부' ? '일부 맞음' : rec.feedback === '맞아요' ? '맞음' : '확인 전'}
+                            </span>
+                            <ArrowRight size={14} className="text-[#8C857B]" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ===============================================================
+                ② 질문 검사 (8문항, 한 화면에 한 문항 + 기타 직접입력 검증)
+            =============================================================== */}
+            {activePage === 'quiz' && (
+              <div className="max-w-2xl mx-auto">
+                {/* 상단 진행 상태 & 아이 정보 */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between text-xs font-bold text-[#6E6A63] mb-2">
+                    <span className="inline-flex items-center gap-1.5">
+                      <span className="px-2 py-0.5 rounded bg-[#1E1D1A] text-[#F4C44E]">
+                        {qIndex + 1} / {QUESTIONS.length}
+                      </span>
+                      <span>
+                        {currentQ.isSafety ? '안전 확인 질문' : '상황 질문'}
+                      </span>
+                    </span>
+                    <span>
+                      {profile.name} · {profile.months}개월
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-[#ECE5D8] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[#1E1D1A] transition-all duration-300 rounded-full"
+                      style={{ width: `${((qIndex + 1) / QUESTIONS.length) * 100}%` }}
+                    />
+                  </div>
+
+                  {/* 레퍼런스 확인용 문항 점프 버튼 */}
+                  <div className="flex items-center gap-1 mt-3 overflow-x-auto pb-1">
+                    <span className="text-[11px] text-[#8C857B] mr-1 shrink-0">문항 바로보기:</span>
+                    {QUESTIONS.map((q, idx) => (
+                      <button
+                        key={q.id}
+                        onClick={() => setQIndex(idx)}
+                        className={`w-6 h-6 rounded-full text-[11px] font-bold transition ${
+                          qIndex === idx
+                            ? 'bg-[#F4C44E] text-[#1E1D1A]'
+                            : answers[q.id]
+                            ? 'bg-white text-[#1E1D1A] border border-[#D5CBB8]'
+                            : 'bg-transparent text-[#8C857B]'
+                        }`}
+                      >
+                        {idx + 1}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 질문 카드 */}
+                <div className="bg-white rounded-3xl p-6 sm:p-9 border border-[#ECE5D8] shadow-sm space-y-6">
+                  <div className="space-y-1.5">
+                    {currentQ.isSafety && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#FFF5F2] text-[#9A3412] text-xs font-bold border border-[#F5C2B4] mb-1">
+                        <AlertTriangle size={13} />
+                        <span>상처·출혈 확인</span>
+                      </span>
+                    )}
+                    <h2 className="text-xl sm:text-2xl font-black text-[#1E1D1A] leading-snug">
+                      Q{currentQ.id}. {currentQ.question}
+                    </h2>
+                    <p className="text-sm text-[#6E6A63]">{currentQ.sub}</p>
+                  </div>
+
+                  {/* 선택지 버튼 목록 (손가락으로 누르기 쉽게 큼직하게) */}
+                  <div className="space-y-2.5">
+                    {currentQ.options.map((opt) => {
+                      const isSelected = selectedAns === opt;
+                      return (
+                        <div key={opt} className="space-y-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setAnswers((prev) => ({ ...prev, [currentQ.id]: opt }))
+                            }
+                            className={`w-full text-left px-5 py-4 rounded-2xl border-2 transition flex items-center justify-between cursor-pointer ${
+                              isSelected
+                                ? 'border-[#1E1D1A] bg-[#FEF9E7] font-bold text-[#1E1D1A] shadow-2xs'
+                                : 'border-[#F0EAE1] bg-[#FAF6F0]/60 hover:bg-[#FAF6F0] text-[#4A463F]'
+                            }`}
+                          >
+                            <span className="text-sm sm:text-base">{opt}</span>
+                            <div
+                              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                                isSelected
+                                  ? 'border-[#1E1D1A] bg-[#1E1D1A]'
+                                  : 'border-[#C9C0B1]'
+                              }`}
+                            >
+                              {isSelected && <div className="w-2 h-2 rounded-full bg-[#F4C44E]" />}
+                            </div>
+                          </button>
+
+                          {/* 기타(직접 입력) 선택 시 한 줄 입력칸 노출 */}
+                          {opt === '기타(직접 입력)' && isSelected && (
+                            <div className="pl-2 pr-1 pt-1">
+                              <input
+                                type="text"
+                                value={currentCustomText}
+                                onChange={(e) =>
+                                  setCustomInputs((prev) => ({
+                                    ...prev,
+                                    [currentQ.id]: e.target.value
+                                  }))
+                                }
+                                placeholder="직접 입력해 주세요"
+                                className="w-full px-4 py-3 rounded-xl border-2 border-[#1E1D1A] bg-white text-sm text-[#1E1D1A] focus:outline-none"
+                                autoFocus
+                              />
+                              {currentCustomText.trim().length === 0 && (
+                                <p className="text-xs text-[#B45309] mt-1.5 font-medium">
+                                  * 내용을 입력해야 다음 질문으로 넘어갈 수 있어요.
+                                </p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* 이전 / 다음 버튼 */}
+                  <div className="flex items-center justify-between pt-4 border-t border-[#F2ECE1]">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        qIndex > 0 ? setQIndex(qIndex - 1) : setActivePage('home')
+                      }
+                      className="inline-flex items-center gap-2 text-sm font-semibold text-[#6E6A63] hover:text-[#1E1D1A] px-3 py-2 cursor-pointer"
+                    >
+                      <ArrowLeft size={16} />
+                      <span>{qIndex > 0 ? '이전 질문' : '홈으로'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={!canProceedQuiz}
+                      onClick={() => {
+                        if (qIndex < QUESTIONS.length - 1) {
+                          setQIndex(qIndex + 1);
+                        } else {
+                          setActivePage('memo');
+                        }
+                      }}
+                      className={`inline-flex items-center gap-2 font-bold px-6 py-3 rounded-full text-sm transition ${
+                        canProceedQuiz
+                          ? 'bg-[#1E1D1A] hover:bg-[#36332E] text-white cursor-pointer shadow-sm'
+                          : 'bg-[#E5DEC9] text-[#9E9689] cursor-not-allowed'
+                      }`}
+                    >
+                      <span>{qIndex < QUESTIONS.length - 1 ? '다음 질문' : '답변 완료'}</span>
+                      <ArrowRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ===============================================================
+                ②-2. 8문항 완료 후 마지막 화면 (추가 메모 & 원인 후보 보기)
+            =============================================================== */}
+            {activePage === 'memo' && (
+              <div className="max-w-xl mx-auto bg-white rounded-3xl p-7 sm:p-10 border border-[#ECE5D8] shadow-sm space-y-6">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FEF3C7] text-[#1E1D1A] text-xs font-bold">
+                  <CheckCircle2 size={14} />
+                  <span>8개 문항 답변 완료</span>
+                </div>
+
+                <div className="space-y-1.5">
+                  <h2 className="text-2xl font-black text-[#1E1D1A]">질문에 모두 답했어요</h2>
+                  <p className="text-sm text-[#6E6A63]">
+                    선택하신 8가지 답변을 바탕으로 공공기관 자료에서 가능성이 높은 원인 후보를 찾아볼게요.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-[#5C574F]">
+                    추가 메모 (선택)
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={extraMemo}
+                    onChange={(e) => setExtraMemo(e.target.value)}
+                    placeholder="특별한 상황이 있으면 적어 주세요"
+                    className="w-full px-4 py-3 rounded-2xl border border-[#DFD7C8] bg-[#FAF6F0]/60 text-sm text-[#1E1D1A] focus:outline-none focus:border-[#1E1D1A]"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setQIndex(7);
+                      setActivePage('quiz');
+                    }}
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#6E6A63] hover:text-[#1E1D1A]"
+                  >
+                    <ArrowLeft size={16} />
+                    <span>이전 질문으로</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setActivePage('loading')}
+                    className="inline-flex items-center gap-2 bg-[#1E1D1A] hover:bg-[#36332E] text-white font-bold px-7 py-3.5 rounded-full text-sm shadow-md transition cursor-pointer"
+                  >
+                    <span>원인 후보 보기</span>
+                    <ArrowRight size={16} />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ===============================================================
+                ③ 분석 중 화면 (loading_animation.html 100% 동일 메커니즘 이식)
+            =============================================================== */}
+            {activePage === 'loading' && (
+              <div className="py-8 flex flex-col items-center justify-center text-center">
+                {/* 궤도 스테이지 */}
+                <div
+                  className="relative flex items-center justify-center my-2"
+                  style={{
+                    width: isMobile ? '290px' : '360px',
+                    height: isMobile ? '290px' : '360px',
+                    '--R': isMobile ? '110px' : '142px'
+                  }}
+                >
+                  {/* 바깥 링 & 안쪽 점선 링 */}
+                  <div
+                    className="absolute rounded-full border border-[#DFD7C8]"
+                    style={{ inset: 'calc(50% - var(--R))' }}
+                  />
+                  <div
+                    className="absolute rounded-full border border-dashed border-[#DFD7C8]"
+                    style={{ inset: 'calc(50% - var(--R) + 52px)' }}
+                  />
+
+                  {/* 물결 리플 2개 */}
+                  <div
+                    className="absolute w-24 h-24 rounded-full border-2 border-[#F4C44E]"
+                    style={{ animation: 'babyRipple 1.8s 0.1s ease-out infinite' }}
+                  />
+                  <div
+                    className="absolute w-24 h-24 rounded-full border-2 border-[#F5A391]"
+                    style={{ animation: 'babyRipple 1.8s 1s ease-out infinite' }}
+                  />
+
+                  {/* 회전하는 6개 원인 아이콘 궤도 (24초/바퀴, 아이콘은 정방향 유지) */}
+                  <div
+                    className="absolute inset-0"
+                    style={{ animation: 'orbitSpin 24s 1s linear infinite' }}
+                  >
+                    {[
+                      { type: 'msg', label: '표현', angle: 0 },
+                      { type: 'moon', label: '피로', angle: 60 },
+                      { type: 'home', label: '환경', angle: 120 },
+                      { type: 'puzzle', label: '놀이', angle: 180 },
+                      { type: 'smile', label: '탐색', angle: 240 },
+                      { type: 'users', label: '관심', angle: 300 }
+                    ].map((node, i) => (
+                      <div
+                        key={node.label}
+                        className="absolute left-1/2 top-1/2 w-0 h-0"
+                        style={{
+                          '--a': `${node.angle}deg`,
+                          '--i': i,
+                          transform: `rotate(${node.angle}deg)`
+                        }}
+                      >
+                        <div
+                          className="absolute"
+                          style={{
+                            animation:
+                              'orbitBurst 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) both',
+                            animationDelay: `${0.25 + i * 0.07}s`
+                          }}
+                        >
+                          <div
+                            className="absolute left-0 top-0 w-0 h-0"
+                            style={{
+                              transform: `rotate(-${node.angle}deg)`,
+                              animation: 'orbitCounter 24s 1s linear infinite'
+                            }}
+                          >
+                            <div
+                              className="absolute -left-[26px] -top-[26px] w-[52px] h-[52px] rounded-2xl bg-white border border-[#E8E1D5] flex items-center justify-center shadow-md"
+                              style={{
+                                animation: `chipGlow 3.6s ${1.2 + i * 0.6}s ease-in-out infinite`
+                              }}
+                            >
+                              <CauseIcon type={node.type} size={22} />
+                            </div>
+                            <div className="absolute -left-[30px] w-[60px] top-[30px] text-center text-xs font-bold text-[#6E6A63]">
+                              {node.label}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* 중앙 아기 얼굴 코어 (0.0s '팡' 팝업) */}
+                  <div
+                    className="relative z-10 w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#F5A391] text-[#1E1D1A] flex items-center justify-center shadow-lg border-4 border-white"
+                    style={{
+                      animation: 'babyPop 0.55s cubic-bezier(0.2, 1.6, 0.4, 1) both'
+                    }}
+                  >
+                    <svg
+                      className="w-11 h-11"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.7"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M9 12h.01" />
+                      <path d="M15 12h.01" />
+                      <path d="M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5" />
+                      <path d="M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* 3단계 순환 상태 문구 (loading_animation.html 동일) */}
+                <div className="mt-4 space-y-2">
+                  <div className="relative w-80 h-8 overflow-hidden mx-auto">
+                    <b
+                      className="absolute inset-x-0 text-lg sm:text-xl font-black text-[#1E1D1A]"
+                      style={{ animation: 'statusMsgCycle 7.5s infinite' }}
+                    >
+                      답변을 정리하고 있어요
+                    </b>
+                    <b
+                      className="absolute inset-x-0 text-lg sm:text-xl font-black text-[#1E1D1A]"
+                      style={{
+                        animation: 'statusMsgCycle 7.5s 2.5s infinite',
+                        opacity: 0
+                      }}
+                    >
+                      공공기관 자료와 비교하고 있어요
+                    </b>
+                    <b
+                      className="absolute inset-x-0 text-lg sm:text-xl font-black text-[#1E1D1A]"
+                      style={{
+                        animation: 'statusMsgCycle 7.5s 5s infinite',
+                        opacity: 0
+                      }}
+                    >
+                      원인 후보를 고르고 있어요
+                    </b>
+                  </div>
+
+                  <div className="flex items-center justify-center gap-1.5 pt-1">
+                    {[0, 0.2, 0.4].map((d, idx) => (
+                      <i
+                        key={idx}
+                        className="inline-block w-2 h-2 rounded-full bg-[#1E1D1A]"
+                        style={{ animation: `dotPulse 1.2s ${d}s infinite` }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setActivePage('result')}
+                  className="mt-7 px-5 py-2.5 rounded-full bg-white border border-[#DFD7C8] text-xs font-bold text-[#5C574F] hover:text-[#1E1D1A] shadow-2xs cursor-pointer"
+                >
+                  결과 화면으로 바로 넘어가기 →
+                </button>
+              </div>
+            )}
+
+            {/* ===============================================================
+                ④ 결과 화면 (page_spec.md 순서 및 금지 규칙 엄격 준수)
+            =============================================================== */}
+            {activePage === 'result' && (
+              <div className="space-y-6">
+                {/* 레퍼런스 검수용 상태 스위치 바 (상처 유무 / 빈 결과 / AI·기본 설명) */}
+                <div className="bg-[#EFE9DE] px-4 py-2.5 rounded-2xl flex flex-wrap items-center justify-between gap-2 text-xs">
+                  <span className="font-bold text-[#5C574F]">
+                    [결과 화면 상태 테스트 스위치]
+                  </span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      onClick={() =>
+                        setAnswers((prev) => ({
+                          ...prev,
+                          1: prev[1] === '예' ? '아니오' : '예'
+                        }))
+                      }
+                      className={`px-2.5 py-1 rounded-lg font-bold transition cursor-pointer ${
+                        hasSafetyAlert
+                          ? 'bg-[#9A3412] text-white'
+                          : 'bg-white text-[#5C574F]'
+                      }`}
+                    >
+                      상처 안내 박스: {hasSafetyAlert ? '켜짐(Q1=예)' : '꺼짐(Q1=아니오)'}
+                    </button>
+
+                    <button
+                      onClick={() => setIsEmptyResultDemo(!isEmptyResultDemo)}
+                      className={`px-2.5 py-1 rounded-lg font-bold transition cursor-pointer ${
+                        isEmptyResultDemo
+                          ? 'bg-[#1E1D1A] text-[#F4C44E]'
+                          : 'bg-white text-[#5C574F]'
+                      }`}
+                    >
+                      {isEmptyResultDemo ? '좁혀지지 않은 결과(빈 상태)' : '일반 결과(후보 3개)'}
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        setExplanationMode((m) => (m === 'AI 설명' ? '기본 설명' : 'AI 설명'))
+                      }
+                      className="px-2.5 py-1 rounded-lg bg-white text-[#5C574F] font-bold cursor-pointer"
+                    >
+                      배지: {explanationMode}
+                    </button>
+                  </div>
+                </div>
+
+                {/* 1. (상처가 있다고 답한 경우만) 최상단 안전 안내 박스 */}
+                {hasSafetyAlert && (
+                  <div className="bg-[#FFF5F2] border-2 border-[#F5C2B4] rounded-3xl p-5 sm:p-6 flex items-start gap-3.5 shadow-xs">
+                    <div className="w-10 h-10 rounded-2xl bg-[#FEE2E2] text-[#9A3412] flex items-center justify-center shrink-0 mt-0.5">
+                      <AlertTriangle size={20} />
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="text-base font-black text-[#9A3412]">
+                        먼저 상처를 확인해 주세요
+                      </h3>
+                      <p className="text-sm text-[#7C2D12] leading-relaxed">
+                        물린 곳에 상처나 피가 나면 깨끗이 씻고, 소아청소년과나 육아종합지원센터에
+                        상담해 보세요.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2~4. 입력 요약 한 줄 + 제목 + 안내 두 줄 */}
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-block px-3 py-1 rounded-full bg-[#F4C44E] text-[#1E1D1A] text-xs font-extrabold">
+                      {profile.months}개월 · {answers[3] || '친구'}를 깨물었을 때
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-white border border-[#E8E1D5] text-[11px] font-semibold text-[#6E6A63]">
+                      <Sparkles size={11} />
+                      <span>{explanationMode}</span>
+                    </span>
+                  </div>
+
+                  <h1 className="text-2xl sm:text-3xl font-black text-[#1E1D1A]">
+                    가능성이 높은 원인 후보예요
+                  </h1>
+
+                  <div className="text-xs sm:text-sm text-[#6E6A63] space-y-0.5">
+                    <p className="font-bold text-[#4A463F]">· 진단이 아니에요.</p>
+                    <p>
+                      · 원인은 여러 개가 함께 있을 수 있어요. 위에 있다고 더 확실한 건 아니에요.
+                    </p>
+                  </div>
+                </div>
+
+                {/* 본문: PC에서는 좌측 원인 후보(7) + 우측 내 답변 요약(5) / 폰에서는 1열 */}
+                <div
+                  className={`grid gap-6 items-start ${
+                    isMobile ? 'grid-cols-1' : 'grid-cols-12'
+                  }`}
+                >
+                  {/* 좌측: 5. 원인 후보 목록 (또는 빈 상태) */}
+                  <div className={`${isMobile ? '' : 'col-span-8'} space-y-4`}>
+                    {isEmptyResultDemo ? (
+                      <div className="bg-white rounded-3xl p-8 border border-[#ECE5D8] text-center space-y-4">
+                        <div className="w-12 h-12 rounded-2xl bg-[#FAF6F0] text-[#8C857B] flex items-center justify-center mx-auto">
+                          <Info size={24} />
+                        </div>
+                        <div className="space-y-1.5">
+                          <h3 className="text-lg font-extrabold text-[#1E1D1A]">
+                            답변만으로 원인 후보를 좁히기 어려워요
+                          </h3>
+                          <p className="text-sm text-[#6E6A63]">
+                            관찰 내용을 확인하고 다시 답해 주세요.
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setQIndex(0);
+                            setActivePage('quiz');
+                          }}
+                          className="inline-flex items-center gap-2 bg-[#1E1D1A] text-white text-sm font-bold px-6 py-3 rounded-full"
+                        >
+                          <RotateCcw size={15} />
+                          <span>질문 다시 답하기</span>
+                        </button>
+                      </div>
+                    ) : (
+                      CAUSE_CANDIDATES.map((cause) => {
+                        const isEvidenceOpen = Boolean(openEvidence[cause.id]);
+                        return (
+                          <div
+                            key={cause.id}
+                            className="bg-white rounded-3xl p-6 sm:p-7 border border-[#ECE5D8] shadow-xs space-y-5"
+                          >
+                            {/* 원인 헤더 (순위/% 없이 번호 + 고정 아이콘만 표시) */}
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
+                                  style={{
+                                    backgroundColor: cause.bgTint,
+                                    color: cause.accentTint
+                                  }}
+                                >
+                                  <CauseIcon type={cause.iconType} size={22} />
+                                </div>
+                                <div>
+                                  <span className="text-[11px] font-bold text-[#8C857B]">
+                                    원인 후보 {cause.order}
+                                  </span>
+                                  <h3 className="text-lg sm:text-xl font-black text-[#1E1D1A]">
+                                    {cause.title}
+                                  </h3>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* 우리 아이 답변으로 본 이유 */}
+                            <div className="bg-[#FAF6F0] rounded-2xl p-4 space-y-1">
+                              <div className="text-xs font-extrabold text-[#6E6A63]">
+                                우리 아이 답변으로 본 이유
+                              </div>
+                              <p className="text-sm font-medium text-[#1E1D1A] leading-relaxed">
+                                {cause.reason}
+                              </p>
+                            </div>
+
+                            {/* 이럴 땐 이렇게 (대응 방법 2~3줄) */}
+                            <div className="space-y-2">
+                              <div className="text-xs font-extrabold text-[#1E1D1A]">
+                                이럴 땐 이렇게 해보세요
+                              </div>
+                              <ul className="space-y-2">
+                                {cause.actions.map((act, i) => (
+                                  <li
+                                    key={i}
+                                    className="flex items-start gap-2.5 text-sm text-[#3D3A34] leading-relaxed"
+                                  >
+                                    <span className="w-5 h-5 rounded-full bg-[#FEF3C7] text-[#1E1D1A] font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                                      {i + 1}
+                                    </span>
+                                    <span>{act}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+
+                            {/* 근거 보기 (접기/펼치기): 기관명·자료명·쪽수 + 원문 한 줄 + 내 관련 답변 */}
+                            <div className="pt-2 border-t border-[#F2ECE1]">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setOpenEvidence((prev) => ({
+                                    ...prev,
+                                    [cause.id]: !prev[cause.id]
+                                  }))
+                                }
+                                className="w-full flex items-center justify-between text-xs font-bold text-[#5C574F] hover:text-[#1E1D1A] py-1 cursor-pointer"
+                              >
+                                <span className="inline-flex items-center gap-1.5">
+                                  <BookOpen size={14} />
+                                  <span>근거 보기 (공공기관 자료 출처)</span>
+                                </span>
+                                {isEvidenceOpen ? (
+                                  <ChevronUp size={15} />
+                                ) : (
+                                  <ChevronDown size={15} />
+                                )}
+                              </button>
+
+                              {isEvidenceOpen && (
+                                <div className="mt-3 p-4 rounded-2xl bg-[#FAF6F0]/80 border border-[#ECE5D8] space-y-2.5 text-xs">
+                                  <div>
+                                    <span className="font-bold text-[#8C857B] block mb-0.5">
+                                      출처 자료
+                                    </span>
+                                    <span className="font-bold text-[#1E1D1A]">
+                                      {cause.evidence.source}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <span className="font-bold text-[#8C857B] block mb-0.5">
+                                      원문 발췌
+                                    </span>
+                                    <p className="text-[#4A463F] italic">
+                                      {cause.evidence.quote}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <span className="font-bold text-[#8C857B] block mb-1">
+                                      내가 고른 관련 답변
+                                    </span>
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {cause.evidence.myAnswers.map((ma) => (
+                                        <span
+                                          key={ma}
+                                          className="px-2.5 py-1 rounded-lg bg-white border border-[#E8E1D5] text-[#1E1D1A] font-medium"
+                                        >
+                                          {ma}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {/* 우측 (PC에서는 옆에 고정, 폰에서는 접기 가능): 6. 내가 답한 내용 요약 + 7. 결과가 맞았나요? */}
+                  <div className={`${isMobile ? '' : 'col-span-4'} space-y-4`}>
+                    {/* 내가 답한 내용 요약 */}
+                    <div className="bg-white rounded-3xl p-6 border border-[#ECE5D8] shadow-xs space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-base font-extrabold text-[#1E1D1A]">
+                          내가 답한 내용 요약
+                        </h3>
+                        {isMobile && (
+                          <button
+                            onClick={() => setMobileAnswersOpen(!mobileAnswersOpen)}
+                            className="text-xs font-bold text-[#6E6A63] flex items-center gap-1"
+                          >
+                            <span>{mobileAnswersOpen ? '접기' : '펼치기'}</span>
+                            {mobileAnswersOpen ? (
+                              <ChevronUp size={14} />
+                            ) : (
+                              <ChevronDown size={14} />
+                            )}
+                          </button>
+                        )}
+                      </div>
+
+                      {(!isMobile || mobileAnswersOpen) && (
+                        <div className="space-y-2.5 divide-y divide-[#F5EFE6] text-xs">
+                          {QUESTIONS.map((q) => (
+                            <div key={q.id} className="pt-2 first:pt-0">
+                              <div className="text-[#8C857B] font-medium">
+                                Q{q.id}. {q.question}
+                              </div>
+                              <div className="font-bold text-[#1E1D1A] mt-0.5">
+                                {answers[q.id] === '기타(직접 입력)'
+                                  ? `기타: ${customInputs[q.id] || ''}`
+                                  : answers[q.id]}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      <button
+                        onClick={() => {
+                          setQIndex(0);
+                          setActivePage('quiz');
+                        }}
+                        className="w-full py-2.5 rounded-xl bg-[#FAF6F0] hover:bg-[#F2ECE1] text-xs font-bold text-[#1E1D1A] transition cursor-pointer"
+                      >
+                        답변 다시 살펴보기
+                      </button>
+                    </div>
+
+                    {/* 7. 결과가 맞았나요? (1탭 저장) */}
+                    <div className="bg-white rounded-3xl p-6 border border-[#ECE5D8] shadow-xs space-y-3">
+                      <div className="space-y-0.5">
+                        <h3 className="text-base font-extrabold text-[#1E1D1A]">
+                          결과가 맞았나요?
+                        </h3>
+                        <p className="text-xs text-[#6E6A63]">
+                          눌러 주신 답변은 기록 탭에 함께 정리돼요.
+                        </p>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2">
+                        {['맞아요', '일부', '아니에요'].map((fb) => (
+                          <button
+                            key={fb}
+                            onClick={() => handleSelectFeedback(fb)}
+                            className={`py-2.5 rounded-xl text-xs font-bold border transition cursor-pointer ${
+                              resultFeedback === fb
+                                ? 'bg-[#1E1D1A] text-[#F4C44E] border-[#1E1D1A]'
+                                : 'bg-[#FAF6F0] text-[#5C574F] border-[#E8E1D5] hover:bg-[#F2ECE1]'
+                            }`}
+                          >
+                            {fb}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 8. 하단: 검사 기록 보기 */}
+                    <button
+                      onClick={() => setActivePage('records')}
+                      className="w-full py-4 rounded-2xl bg-[#23211E] hover:bg-[#383530] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition cursor-pointer"
+                    >
+                      <Clock size={16} />
+                      <span>검사 기록 보기</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ===============================================================
+                ⑤ 기록 화면 (삭제 확인 시트 연동 + 빈 상태 지원)
+            =============================================================== */}
+            {activePage === 'records' && (
+              <div className="max-w-4xl mx-auto space-y-6">
+                <div className="flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <h1 className="text-2xl sm:text-3xl font-black text-[#1E1D1A]">검사 기록</h1>
+                    <p className="text-sm text-[#6E6A63] mt-1">
+                      기록은 이 기기에만 저장돼요. (로그인 없음)
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setQIndex(0);
+                      setActivePage('quiz');
+                    }}
+                    className="inline-flex items-center gap-2 bg-[#1E1D1A] text-white text-xs sm:text-sm font-bold px-5 py-2.5 rounded-full cursor-pointer"
+                  >
+                    <span>+ 새 검사 시작하기</span>
+                  </button>
+                </div>
+
+                {records.length === 0 ? (
+                  <div className="bg-white rounded-3xl p-12 text-center border border-[#ECE5D8] space-y-3">
+                    <p className="text-base font-bold text-[#6E6A63]">아직 검사 기록이 없어요</p>
+                    <button
+                      onClick={() => setRecords(INITIAL_RECORDS)}
+                      className="text-xs underline text-[#8C857B] hover:text-[#1E1D1A]"
+                    >
+                      [샘플 기록 다시 불러오기]
+                    </button>
+                  </div>
+                ) : (
+                  <div className="bg-white rounded-3xl border border-[#ECE5D8] overflow-hidden shadow-xs divide-y divide-[#F2ECE1]">
+                    {records.map((rec) => (
+                      <div
+                        key={rec.id}
+                        className="p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4 hover:bg-[#FAF6F0]/50 transition"
+                      >
+                        <div className="space-y-1 min-w-0">
+                          <div className="flex items-center gap-2 text-xs text-[#8C857B]">
+                            <span className="font-bold text-[#5C574F]">{rec.date}</span>
+                            <span>·</span>
+                            <span>대상: {rec.target}</span>
+                            {rec.hasInjury && (
+                              <span className="px-2 py-0.5 rounded bg-[#FFF5F2] text-[#9A3412] font-bold">
+                                상처 확인 안내됨
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-base font-extrabold text-[#1E1D1A]">
+                            {rec.causes}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2.5 shrink-0">
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-bold ${
+                              rec.feedback === '맞아요'
+                                ? 'bg-[#E6F4EA] text-[#2E6F40]'
+                                : rec.feedback === '일부'
+                                ? 'bg-[#FEF3C7] text-[#B45309]'
+                                : 'bg-[#F3EFEA] text-[#8C857B]'
+                            }`}
+                          >
+                            {rec.feedback}
+                          </span>
+
+                          <button
+                            onClick={() => setActivePage('result')}
+                            className="px-3.5 py-1.5 rounded-xl bg-[#FAF6F0] hover:bg-[#ECE5D8] text-xs font-bold text-[#1E1D1A] transition cursor-pointer"
+                          >
+                            결과 보기
+                          </button>
+
+                          <button
+                            onClick={() => setDeleteTargetId(rec.id)}
+                            className="p-2 rounded-xl text-[#8C857B] hover:text-[#9A3412] hover:bg-[#FFF5F2] transition cursor-pointer"
+                            title="삭제"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </main>
+
+          {/* 폰(375px) 전용 하단 고정 탭바 (홈 / 질문 검사 / 기록) */}
+          {isMobile && (
+            <nav className="absolute bottom-0 inset-x-0 bg-white border-t border-[#ECE5D8] px-6 py-2.5 flex items-center justify-around z-30">
+              {[
+                { id: 'home', label: '홈', icon: HomeIcon },
+                { id: 'quiz', label: '질문 검사', icon: CheckCircle2 },
+                { id: 'records', label: '기록', icon: Clock }
+              ].map((item) => {
+                const IconComp = item.icon;
+                const active =
+                  activePage === item.id ||
+                  (item.id === 'quiz' &&
+                    ['memo', 'loading', 'result'].includes(activePage));
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActivePage(item.id)}
+                    className={`flex flex-col items-center gap-1 text-[11px] font-bold ${
+                      active ? 'text-[#1E1D1A]' : 'text-[#9E9689]'
+                    }`}
+                  >
+                    <IconComp size={18} />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          )}
+
+          {/* =================================================================
+              시트 1: 프로필 수정 시트 (가명, 12~59개월, 전체 기록 초기화)
+          ================================================================= */}
+          {isProfileSheetOpen && (
+            <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
+              <div className="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-[#ECE5D8] space-y-5">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-black text-[#1E1D1A]">아이 정보</h3>
+                  <button
+                    onClick={() => setIsProfileSheetOpen(false)}
+                    className="p-1 text-[#8C857B] hover:text-[#1E1D1A]"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                <form onSubmit={handleSaveProfile} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[#5C574F] mb-1">
+                      이름 (또는 가명)
+                    </label>
+                    <input
+                      type="text"
+                      value={profileForm.name}
+                      onChange={(e) =>
+                        setProfileForm((prev) => ({ ...prev, name: e.target.value }))
+                      }
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#DFD7C8] text-sm font-semibold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#5C574F] mb-1">
+                      개월 수 (12~59개월)
+                    </label>
+                    <input
+                      type="number"
+                      min={12}
+                      max={59}
+                      value={profileForm.months}
+                      onChange={(e) =>
+                        setProfileForm((prev) => ({ ...prev, months: e.target.value }))
+                      }
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#DFD7C8] text-sm font-semibold"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsProfileSheetOpen(false)}
+                      className="flex-1 py-2.5 rounded-xl bg-[#FAF6F0] text-xs font-bold text-[#5C574F]"
+                    >
+                      취소
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 py-2.5 rounded-xl bg-[#1E1D1A] text-xs font-bold text-white"
+                    >
+                      저장
+                    </button>
+                  </div>
+                </form>
+
+                {/* 위험 동작: 전체 기록 초기화 (눈에 덜 띄게 하단 배치 + 한 번 더 확인) */}
+                <div className="pt-4 border-t border-[#F2ECE1] text-center">
+                  {!confirmResetStep ? (
+                    <button
+                      type="button"
+                      onClick={() => setConfirmResetStep(true)}
+                      className="text-xs text-[#9E9689] hover:text-[#9A3412] underline"
+                    >
+                      전체 기록 초기화
+                    </button>
+                  ) : (
+                    <div className="bg-[#FFF5F2] p-3 rounded-2xl space-y-2">
+                      <p className="text-xs font-bold text-[#9A3412]">
+                        정말 모든 검사 기록을 초기화할까요?
+                      </p>
+                      <div className="flex justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setConfirmResetStep(false)}
+                          className="px-3 py-1 rounded-lg bg-white text-xs font-bold text-[#5C574F]"
+                        >
+                          취소
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleResetAllRecords}
+                          className="px-3 py-1 rounded-lg bg-[#9A3412] text-xs font-bold text-white"
+                        >
+                          초기화 확인
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* =================================================================
+              시트 2: 삭제 확인 시트 ("이 기록을 삭제할까요?")
+          ================================================================= */}
+          {deleteTargetId && (
+            <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
+              <div className="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl border border-[#ECE5D8] space-y-5 text-center">
+                <div className="space-y-1.5">
+                  <h3 className="text-base font-black text-[#1E1D1A]">
+                    이 기록을 삭제할까요?
+                  </h3>
+                  <p className="text-xs text-[#6E6A63]">
+                    삭제한 기록은 다시 복구할 수 없어요.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setDeleteTargetId(null)}
+                    className="flex-1 py-2.5 rounded-xl bg-[#FAF6F0] text-xs font-bold text-[#5C574F]"
+                  >
+                    취소
+                  </button>
+                  <button
+                    onClick={handleConfirmDelete}
+                    className="flex-1 py-2.5 rounded-xl bg-[#9A3412] text-xs font-bold text-white"
+                  >
+                    삭제
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
