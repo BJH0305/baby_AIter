@@ -13,9 +13,9 @@ function demoData() {
     profile: { name: "도윤", ageMonths: 38, hasSibling: true },
     consults: [{ id: "c_demo", createdAt: "2026-10-27", round: 1, parentId: null, input, cardIds: getConsultCards(input).map((card) => card.id), answer: ruleAnswer(input, getConsultCards(input)), tried: ["bite-sibling-0", "bite-basic-0"] }],
     feedback: [
-      { id: "f_demo3", consultId: "c_demo", methodId: "bite-sibling-0", date: "2026-10-29", result: "good", memo: "" },
-      { id: "f_demo2", consultId: "c_demo", methodId: "bite-basic-0", date: "2026-10-28", result: "none", memo: "" },
-      { id: "f_demo1", consultId: "c_demo", methodId: "bite-sibling-0", date: "2026-10-27", result: "good", memo: "" }
+      { id: "f_demo3", consultId: "c_demo", methodId: "bite-sibling-0", date: "2026-10-29", result: "good", memo: "단독 시간 후 저녁까지 괜찮았음" },
+      { id: "f_demo2", consultId: "c_demo", methodId: "bite-basic-0", date: "2026-10-28", result: "none", memo: "물자마자 안 된다고 했더니 더 울고 또 물었음" },
+      { id: "f_demo1", consultId: "c_demo", methodId: "bite-sibling-0", date: "2026-10-27", result: "good", memo: "동생 낮잠 때 블록 놀이 10분, 깨물기 없었음" }
     ]
   };
 }
@@ -197,7 +197,7 @@ function renderHome() {
   const recent = data.feedback.slice(0, 3);
   const results = { good: "효과 있음", some: "조금", none: "없음" };
   document.getElementById("homeRecent").innerHTML = recent.length
-    ? `<div class="list">${recent.map((entry) => `<div class="list-item"><div class="body"><div class="name">${esc(results[entry.result] || entry.result)}</div><div class="sub">${esc(entry.date)} · ${esc(entry.memo || "메모 없음")}</div></div></div>`).join("")}</div>`
+    ? `<div class="list">${recent.map((entry) => { const consult = data.consults.find((item) => item.id === entry.consultId); const method = consult?.answer.methods.find((item) => item.id === entry.methodId); return `<div class="list-item"><div class="body"><div class="name">${esc(method?.title || "지도법")}</div><div class="sub">${esc(entry.date)} · ${esc(entry.memo || "메모 없음")}</div></div><span class="badge">${esc(results[entry.result] || entry.result)}</span></div>`; }).join("")}</div>`
     : '<div class="empty"><p>아직 기록이 없어요</p><a class="btn btn-secondary" href="#log">기록 보기</a></div>';
 }
 
