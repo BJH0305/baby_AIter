@@ -25,6 +25,18 @@ const store = {
 let items = store.load();
 // 상담 화면에서 결과 화면으로 넘길 임시 데이터.
 let pendingConsult = null;
+let currentConsultId = null;
+// 상담과 피드백은 서비스 전용 저장소에 보관한다.
+function loadData() {
+  try {
+    const data = JSON.parse(localStorage.getItem("babyaiter-v1"));
+    if (data && data.profile && Array.isArray(data.consults) && Array.isArray(data.feedback)) return data;
+  } catch {}
+  return { profile: { name: "도윤", ageMonths: 38, hasSibling: true }, consults: [], feedback: [] };
+}
+function saveData(data) {
+  try { localStorage.setItem("babyaiter-v1", JSON.stringify(data)); return true; } catch { return false; }
+}
 function getProfile() {
   try { return JSON.parse(localStorage.getItem("babyaiter-v1"))?.profile || { name: "도윤", ageMonths: 38, hasSibling: true }; }
   catch { return { name: "도윤", ageMonths: 38, hasSibling: true }; }
@@ -98,6 +110,7 @@ let filter = "all";
 function render() {
   const age = document.getElementById("askAge");
   if (age) age.textContent = `아이 개월 수: ${getProfile().ageMonths}개월`;
+  renderResult();
   const recent = document.getElementById("recentList");
   if (recent) recent.innerHTML = items.slice(0, 3).map(itemRow).join("");
 
@@ -110,6 +123,20 @@ function render() {
     if (empty) empty.hidden = shown.length !== 0;
   }
   refreshIcons();
+}
+
+// 현재 상담의 결과와 각 지도법의 출처를 표시한다.
+function renderResult() {
+  const container = document.getElementById("resultContent");
+  const consult = loadData().consults.find((item) => item.id === currentConsultId);
+  if (!container || !consult) return;
+  const labels = { green: "가정 지도", yellow: "관찰 필요", red: "전문가 상담 권장" };
+  const answer = consult.answer;
+  const cards = consult.cardIds.map((id) => window.KNOWLEDGE.find((card) => card.id === id)).filter(Boolean);
+  container.innerHTML = `<div class="section"><span class="badge">${esc(labels[answer.level] || labels.green)}</span></div>
+    <div class="section card"><h2 class="title-md">원인 해석</h2>${answer.causes.map((cause) => `<p>${esc(cause)}</p>`).join("")}</div>
+    <div class="section"><h2 class="title-md">지도법</h2>${answer.methods.map((method) => `<div class="card"><h3 class="title-md">${esc(method.title)}</h3><p>${esc(method.how)}</p><button class="btn btn-secondary" data-try="${esc(method.id)}" ${consult.tried.includes(method.id) ? "disabled" : ""}>${consult.tried.includes(method.id) ? "선택했어요" : "해 볼게요"}</button></div>`).join("")}</div>
+    <div class="section"><h2 class="title-md">근거 자료</h2>${cards.map((card) => `<div class="card"><h3 class="title-md">${esc(card.title)}</h3><p>${esc(card.source)}</p></div>`).join("")}</div>`;
 }
 
 function refreshIcons() {
@@ -140,6 +167,15 @@ document.addEventListener("click", (e) => {
     closeSheet();
     render();
     toast(it.status === "done" ? "완료로 표시했어요" : "진행 중으로 바꿨어요");
+  }
+  const choice = e.target.closest("[data-try]");
+  if (choice) {
+    const data = loadData();
+    const consult = data.consults.find((item) => item.id === currentConsultId);
+    if (!consult || consult.tried.includes(choice.dataset.try)) return;
+    consult.tried.push(choice.dataset.try);
+    if (saveData(data)) { renderResult(); toast("지도법을 선택했어요"); }
+    else toast("저장하지 못했어요");
   }
 });
 
@@ -193,7 +229,14 @@ document.getElementById("askForm")?.addEventListener("submit", async (event) => 
   loading.hidden = false;
   try {
     pendingConsult = { input, answer: await askAI(input) };
+    const data = loadData();
+    const id = `c_${Date.now()}`;
+    const cardIds = [...new Set(pendingConsult.answer.methods.map((method) => method.cardId))];
+    data.consults.unshift({ id, createdAt: new Date().toISOString().slice(0, 10), round: 1, parentId: null, input, cardIds, answer: pendingConsult.answer, tried: [] });
+    if (!saveData(data)) throw new Error("저장 실패");
+    currentConsultId = id;
     location.hash = "#result";
+    toast("상담 결과를 저장했어요");
   } catch {
     toast("분석하지 못했어요. 다시 시도해 주세요");
   } finally {
