@@ -15,7 +15,8 @@
   - `MOCK.first/second` 고정 답변과 `docs/DATA.md` 6번 규칙은 이 방식으로 대체한다. `demoData()`의 첫 상담 answer도 `ruleAnswer(동생 입력, searchCards(동생 입력), null)`로 만든다.
   - 확인: 친구/장난감 다툼 → 또래 다툼 카드가 첫 근거로 나오고 원인·지도법이 친구 상황에 맞음. 동생/안고 있을 때 → 동생 질투 카드가 첫 근거.
   - 메모: js/ai.js, js/mock.js, js/app.js, docs/DATA.md / 친구·동생 검색 및 피드백 유지·교체 확인 / 이전 기록 ID 호환
-- [ ] R2. 결과 화면 지도법 카드에 같은 문장이 두 번 나옴 (`title`과 `how`가 같음). `how`가 `title`과 같으면 `how` 줄을 출력하지 않는다. 대신 카드 아래 작은 글씨로 `왜: {why}` 와 `근거: {카드 title}`을 보여 준다.
+- [x] R2. 결과 화면 지도법 카드에 같은 문장이 두 번 나옴 (`title`과 `how`가 같음). `how`가 `title`과 같으면 `how` 줄을 출력하지 않는다. 대신 카드 아래 작은 글씨로 `왜: {why}` 와 `근거: {카드 title}`을 보여 준다.
+  - 메모: js/app.js / 결과 카드 코드 및 문법 확인 / 중복 문장 제거와 근거 표시
 - [ ] R3. 위험 신호 규칙이 실제 문장에서 동작하지 않음 ("상처가 났어요 피가 났어요"를 넣어도 '가정 지도'). `applySafety`가 카드의 `redFlags` 대신 **`redFlagKeywords`**(knowledge.js에 Claude가 추가함)를 입력 text·situation에서 찾도록 바꾼다. red일 때 안내 카드는 결과 화면 맨 위(달라진 점보다 위)에 보이게 한다.
 - [ ] R4. 스타터 키트 예제 코드가 남아 있음. `js/data.js`의 SEED_ITEMS와 이를 쓰는 코드(`STORE_KEY`, `store`, `items`, `itemRow`, `filter`/`filterChips`, `catChips`, `newForm`, `.list-item` 클릭 시 바텀시트 여는 핸들러, `data-toggle` 핸들러)를 지운다. `index.html`의 `js/data.js` 스크립트도 제거 (파일 삭제는 사람 허락 없이 해도 됨 — 이 항목이 허락이다).
 - [ ] R5. 시연 데이터 보강: `demoData()` 피드백에 memo를 채운다 (예: 10/27 "동생 낮잠 때 블록 놀이 10분, 깨물기 없었음", 10/28 "물자마자 안 된다고 했더니 더 울고 또 물었음", 10/29 "단독 시간 후 저녁까지 괜찮았음"). 홈 '최근 기록'에는 결과 대신 **지도법 이름 + 결과 배지**로 보여 준다.
