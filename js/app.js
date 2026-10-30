@@ -229,10 +229,21 @@ function renderResult() {
 
 // 출처 원본은 그대로 보관하고 화면에서는 기관·자료 제목·쪽수만 표시한다.
 function displaySource(card) {
-  let label = card.source.split(" - 로컬 ")[0].replace(/\s*\(발행기관 \[확인 필요\]\)/g, "").trim();
-  if (label.startsWith("2023년 양육상담")) label = "[기관 확인 필요] - " + label;
-  return `${label} · ${card.page.split(";")[0]}`;
+  const primary = card.source.split(" - 로컬 ")[0].split("; 보조:")[0];
+  let label = primary.replace(/\s*\(발행기관 \[확인 필요\]\)/g, "").replace(/https:\/\/\S+/g, "").trim();
+  if (!primary.includes("발행기관 [확인 필요]") && !label.startsWith("2023년 양육상담")) label = label.replace(" - ", " · ");
+  label = label.replace("미국 Head Start", "미국 보건복지부 Head Start");
+  if (label.startsWith("CHLA")) label = "미국 " + label;
+  const page = card.page.match(/인쇄 (\d+(?:[~–-]\d+)?)/)?.[1] || card.page.match(/^(\d+)/)?.[1];
+  return `${label}${page ? ` · p.${page.replace("~", "–")}` : ""}`;
 }
+// 해당 자료 자체의 URL만 연결한다. 보조 자료 링크를 원문인 것처럼 붙이지 않는다.
+function sourceLink(card) {
+  const primary = card.source.split("; 보조:")[0];
+  const url = primary.match(/https:\/\/[^\s;)]+/)?.[0];
+  return url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">원문 보기 ↗</a>` : "";
+}
+
 const feedbackLabels = { yes: "맞아요", some: "일부", no: "아니에요" };
 // 옛 상담과 피드백은 저장소에서 보존하고 새 검사만 목록에 보여 준다.
 function getInspections(data = loadData()) {
@@ -266,7 +277,7 @@ function renderCauseResult(container, consult) {
     // AI가 쓴 이유를 먼저 보여 주고, 없는 경우 카드의 전체 설명을 사용한다.
     const hasAI = consult.source === "ai" && typeof candidate.why === "string" && candidate.why.trim().length > 0;
     const explanation = hasAI ? candidate.why : card.explain;
-    return `<article class="section card cause-card"><h2 class="title-md">${esc(card.title)}</h2>${hasAI ? '<p class="label">우리 아이 답변으로 본 이유</p>' : ""}<p class="cause-summary">${esc(explanation)}</p><div class="cause-tips"><b>이럴 땐 이렇게</b><ul>${card.tips.map((tip) => `<li>${esc(tip.text)}</li>`).join("")}</ul></div><details><summary>근거 보기</summary><div class="evidence-body">${hasAI ? `<p>${esc(card.explain)}</p>` : ""}<p>선택한 답변: ${esc(selected)}</p><p class="muted source-text">${esc(displaySource(card))}</p><blockquote>${esc(card.evidence)}</blockquote>${card.verified === false ? '<span class="badge">검수 중</span>' : ""}</div></details></article>`;
+    return `<article class="section card cause-card"><h2 class="title-md">${esc(card.title)}</h2>${hasAI ? '<p class="label">우리 아이 답변으로 본 이유</p>' : ""}<p class="cause-summary">${esc(explanation)}</p><div class="cause-tips"><b>이럴 땐 이렇게</b><ul>${card.tips.map((tip) => `<li>${esc(tip.text)}</li>`).join("")}</ul></div><details><summary>근거 보기</summary><div class="evidence-body">${hasAI ? `<p>${esc(card.explain)}</p>` : ""}<p>선택한 답변: ${esc(selected)}</p><p class="muted source-text">${esc(displaySource(card))}</p>${sourceLink(card)}<blockquote>${esc(card.evidence)}</blockquote>${card.verified === false ? '<span class="badge">검수 중</span>' : ""}</div></details></article>`;
   }).join("") : '<div class="section empty"><p>답변만으로 원인 후보를 좁히기 어려워요.</p><p>관찰 내용을 확인하고 다시 답해 주세요.</p></div>') + `<div class="section card"><h2 class="title-md">결과가 맞았나요?</h2><div class="chips" role="group" aria-label="결과 피드백">${Object.entries(feedbackLabels).map(([value, label]) => `<button type="button" class="chip ${consult.feedbackResult === value ? "on" : ""}" aria-pressed="${consult.feedbackResult === value}" data-cause-feedback="${value}" data-inspection="${esc(consult.id)}">${label}</button>`).join("")}</div></div><a class="btn btn-secondary btn-block" href="#ask">답변 다시 살펴보기</a><a class="btn btn-ghost btn-block" href="#log">검사 기록 보기</a>`;
 }
 // 한 탭으로 검사별 피드백을 갱신한다. 이전 지도법 피드백과 섞지 않는다.
