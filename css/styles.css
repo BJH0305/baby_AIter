@@ -173,7 +173,7 @@ svg.lucide, [data-lucide] { width: 20px; height: 20px; stroke-width: 2; flex-shr
 .bottom-cta {
   position: sticky; bottom: 0;
   padding: var(--s3) var(--s4) var(--s4);
-  background: linear-gradient(to top, var(--bg) 70%, transparent);
+  background: var(--bg);
 }
 
 /* ---------- 폼 ---------- */
@@ -211,7 +211,7 @@ svg.lucide, [data-lucide] { width: 20px; height: 20px; stroke-width: 2; flex-shr
 .empty svg { width: 40px; height: 40px; margin-bottom: var(--s3); color: var(--line); }
 .empty p { margin-bottom: var(--s4); }
 
-.skeleton { background: linear-gradient(90deg, var(--line) 25%, #f0f2f4 50%, var(--line) 75%); background-size: 200% 100%; animation: sk 1.2s infinite; border-radius: var(--r-sm); }
+.skeleton { background: var(--line); border-radius: var(--r-sm); }
 @keyframes sk { from { background-position: 200% 0; } to { background-position: -200% 0; } }
 
 /* ---------- 토스트·바텀시트 ---------- */

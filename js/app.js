@@ -8,16 +8,18 @@ let pendingConsult = null;
 let currentConsultId = null;
 // 최초 실행과 시연 초기화에 사용할 가명 예시 데이터.
 function demoData() {
-  const input = { target: "동생", situation: "동생을 안고 있을 때", text: "", ageMonths: 38 };
-  return {
-    profile: { name: "도윤", ageMonths: 38, hasSibling: true },
-    consults: [{ id: "c_demo", createdAt: "2026-10-27", round: 1, parentId: null, input, cardIds: getConsultCards(input).map((card) => card.id), answer: ruleAnswer(input, getConsultCards(input)), tried: ["bite-sibling-0", "bite-basic-0"] }],
-    feedback: [
-      { id: "f_demo3", consultId: "c_demo", methodId: "bite-sibling-0", date: "2026-10-29", result: "good", memo: "단독 시간 후 저녁까지 괜찮았음" },
-      { id: "f_demo2", consultId: "c_demo", methodId: "bite-basic-0", date: "2026-10-28", result: "none", memo: "물자마자 안 된다고 했더니 더 울고 또 물었음" },
-      { id: "f_demo1", consultId: "c_demo", methodId: "bite-sibling-0", date: "2026-10-27", result: "good", memo: "동생 낮잠 때 블록 놀이 10분, 깨물기 없었음" }
-    ]
-  };
+  // 가명·고정 날짜의 검사 2회. 실제 부모 기록과 구별되는 시연 데이터다.
+  const examples = [
+    { id: "c_demo_cause2", createdAt: "2026-10-30", feedbackResult: "some", answers: { "q-situation": "blocked", "q-target": "sibling", "q-context": "home", "q-condition": "unknown", "q-teething": "no", "q-expression": "attention", "q-change": "baby" }, text: "동생을 돌보는 시간에 함께 놀기를 원했어요." },
+    { id: "c_demo_cause1", createdAt: "2026-10-29", feedbackResult: "yes", answers: { "q-situation": "toy", "q-target": "peer", "q-context": "nursery", "q-condition": "tired", "q-teething": "no", "q-expression": "difficult", "q-change": "none" }, text: "어린이집 낮잠 전에 친구가 놀잇감을 만졌어요." }
+  ];
+  const consults = examples.map(({ id, createdAt, feedbackResult, answers, text }) => {
+    const selected = (qid) => window.QUESTIONS.find((q) => q.id === qid).options.find((o) => o.value === answers[qid]).label;
+    const input = { answers, text, ageMonths: 38, target: selected("q-target"), situation: selected("q-situation") };
+    const answer = createCauseAnswer(input);
+    return { id, createdAt, feedbackResult, round: 1, parentId: null, input, cardIds: answer.candidates.map((c) => c.cardId), answer, source: "rule", mode: "fast", tried: [] };
+  });
+  return { profile: { name: "도윤", ageMonths: 38, hasSibling: true }, consults, feedback: [] };
 }
 // 상담과 피드백은 서비스 전용 저장소에 보관한다.
 function loadData() {
@@ -170,7 +172,7 @@ async function reconsult(button) {
     const result = await askAI(previous.input, history, previous.mode || "fast");
     const answer = applySafety(result, previous.input, feedback);
     const id = `c_${Date.now()}`;
-    data.consults.unshift({ id, createdAt: new Date().toISOString().slice(0, 10), round: 2, parentId: previous.id, input: previous.input, cardIds: result._meta.cards.map((card) => card.id), answer, source: result._meta.source, mode: result._meta.mode, tried: [] });
+    data.consults.unshift({ id, createdAt: new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" }).format(new Date()), round: 2, parentId: previous.id, input: previous.input, cardIds: result._meta.cards.map((card) => card.id), answer, source: result._meta.source, mode: result._meta.mode, tried: [] });
     if (!saveData(data)) throw new Error("저장 실패");
     currentConsultId = id;
     location.hash = "#result";
@@ -307,7 +309,7 @@ document.querySelector('[data-screen="home"] .topbar h1')?.addEventListener("cli
   titleTaps += 1;
   if (titleTaps < 5) return;
   titleTaps = 0;
-  if (saveData(demoData())) { currentConsultId = null; render(); toast("예시 데이터로 초기화했어요"); }
+  if (saveData(demoData())) { currentConsultId = null; quizIndex = 0; for (const id of Object.keys(quizAnswers)) delete quizAnswers[id]; document.getElementById("askText").value = ""; renderQuiz(); render(); toast("예시 데이터로 초기화했어요"); }
   else toast("초기화하지 못했어요");
 });
 
@@ -351,7 +353,7 @@ document.getElementById("askForm")?.addEventListener("submit", async (event) => 
     const data = loadData();
     const id = `c_${Date.now()}`;
     const cardIds = result._meta.cards.map((card) => card.id);
-    data.consults.unshift({ id, createdAt: new Date().toISOString().slice(0, 10), round: 1, parentId: null, input, cardIds, answer: pendingConsult.answer, source: result._meta.source, mode: result._meta.mode, tried: [] });
+    data.consults.unshift({ id, createdAt: new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" }).format(new Date()), round: 1, parentId: null, input, cardIds, answer: pendingConsult.answer, source: result._meta.source, mode: result._meta.mode, tried: [] });
     if (!saveData(data)) throw new Error("저장 실패");
     currentConsultId = id;
     location.hash = "#result";

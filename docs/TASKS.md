@@ -63,6 +63,7 @@
 - [x] T21. 디자인 적용: `docs/design-ref/reference.html`(한서희 제공)의 색·글꼴·둥근 카드·여백만 `css/styles.css` :root 토큰에 반영(cream #f7f6f1, green #527b68, ink #24332e, Noto Sans KR). 구조는 지금 모바일 앱 그대로. 서비스 이름은 "베이비 AI터"(레퍼런스의 "베이비 AI 시터" 아님). 레퍼런스의 K-DST 문구는 가져오지 않는다.
   - 메모: css/styles.css, index.html / CSS 변경은 root 토큰 내부만 확인; 기존 화면 생성 검사 통과, Pages 시각 확인 예정 / 사람 원문 검수 미완료
 - [ ] T22. 시연 데이터·안정화: 도윤(38개월) 시나리오를 질문 검사 기준으로 바꾸고(검사 2회 기록), 375px·콘솔 에러 0·모든 버튼 점검. favicon 추가. Pages 주소(https://bjh0305.github.io/baby_AIter/)에서 확인.
+  - 메모: js/app.js, index.html, favicon.svg, css/styles.css / 시연 데이터·초기화·파비콘 구현 및 로컬 통합 검사 통과 / Pages 375px·전체 실클릭 확인 중
 
 ## 질문
 (Codex가 막히면 여기에 적는다)
