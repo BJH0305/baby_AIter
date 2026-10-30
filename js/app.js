@@ -70,7 +70,8 @@ function showScreen(name) {
   document.querySelectorAll("#tabbar a").forEach((a) =>
     a.classList.toggle("active", a.dataset.tab === target)
   );
-  // 입력 화면에서는 탭바 숨김
+  document.querySelectorAll("[data-desktop-tab]").forEach((link) => { link.classList.toggle("active", link.dataset.desktopTab === (target === "result" ? "ask" : target)); });
+  // 휴대폰에서는 모든 화면의 하단 탭을 유지한다.
   const tabbar = document.getElementById("tabbar");
   if (tabbar) tabbar.hidden = false;
   window.scrollTo(0, 0);
@@ -158,6 +159,9 @@ function inspectionRow(consult) {
 function renderHome() {
   const data = loadData();
   document.getElementById("profileSummary").textContent = `${data.profile.name} · ${data.profile.ageMonths}개월`;
+  const orbitItems = [["message-circle", "표현", 50, 0], ["moon", "피로", 93, 25], ["house", "환경", 93, 75], ["puzzle", "놀이", 50, 100], ["smile", "탐색", 7, 75], ["users", "관심", 7, 25]];
+  const orbit = document.getElementById("homeOrbitNodes");
+  if (orbit) orbit.innerHTML = orbitItems.map(([name, label, x, y]) => `<div class="home-node" style="left:${x}%;top:${y}%"><span class="icon-badge"><i data-lucide="${name}"></i></span><span>${label}</span></div>`).join("");
   const recent = getInspections(data).slice(0, 3);
   document.getElementById("homeRecent").innerHTML = recent.length ? recent.map(inspectionRow).join("") : '<div class="empty"><p>아직 검사 기록이 없어요</p><p>질문에 답하고 원인 후보를 살펴보세요.</p></div>';
 }
@@ -178,7 +182,7 @@ function renderCauseResult(container, consult) {
   const safety = answer.level === "red" ? '<div class="section card" role="alert"><h2 class="title-md">전문가 상담 권장</h2><p>먼저 물린 사람의 안전과 상처를 확인해 주세요. 육아종합지원센터 또는 소아청소년과에 상담해 보세요.</p></div>' : "";
   const targetSummary = {peer: "친구를 깨물었을 때", sibling: "형제자매를 깨물었을 때", adult: "보호자·어른을 깨물었을 때"}[consult.input.answers?.["q-target"]] || "깨물기 상황";
   const inputSummary = `${consult.input.ageMonths}개월 · ${targetSummary}`;
-  container.innerHTML = `${safety}<p class="section muted">${esc(inputSummary)}</p><div class="section"><p>가능성이 높은 원인 후보예요. 진단이 아니에요.</p><p class="muted result-note">원인은 여러 개가 함께 있을 수 있어요. 위에 있다고 더 확실한 건 아니에요.</p><span class="badge">${consult.source === "ai" ? "AI 설명" : "기본 설명"}</span></div>` + (answer.candidates.length ? answer.candidates.map((candidate) => {
+  container.innerHTML = `${safety}<p class="section muted">${esc(inputSummary)}</p><div class="section result-heading"><h1 class="result-title">원인 후보</h1><p>가능성이 높은 원인 후보예요. 진단이 아니에요.</p><p class="muted result-note">원인은 여러 개가 함께 있을 수 있어요. 위에 있다고 더 확실한 건 아니에요.</p><span class="badge">${consult.source === "ai" ? "AI 설명" : "기본 설명"}</span></div>` + (answer.candidates.length ? answer.candidates.map((candidate) => {
     const card = window.KNOWLEDGE.find((c) => c.id === candidate.cardId);
     if (!card) return "";
     const selected = scoreCauses(consult.input).find((c) => c.cardId === card.id)?.reasons.join(" / ") || "[확인 필요]";
@@ -198,11 +202,13 @@ document.addEventListener("click", (event) => {
     if (saveData(data)) { currentConsultId = consult.id; render(); toast("결과에 대한 답변을 저장했어요"); }
     else toast("저장하지 못했어요");
   }
-  if (event.target.closest("[data-start-quiz]")) {
+  const startButton = event.target.closest("[data-start-quiz]");
+  if (startButton) {
     quizIndex = 0;
     for (const id of Object.keys(quizAnswers)) delete quizAnswers[id];
     for (const id of Object.keys(quizOtherAnswers)) delete quizOtherAnswers[id];
     document.getElementById("askText").value = "";
+    if (startButton.dataset.prefillTarget) quizAnswers["q-target"] = startButton.dataset.prefillTarget;
     renderQuiz(); location.hash = "#ask";
   }
 });
@@ -219,7 +225,8 @@ document.addEventListener("click", (e) => {
 
 // 홈 제목을 다섯 번 탭하면 예시 데이터로 되돌린다.
 let titleTaps = 0;
-document.querySelector('[data-screen="home"] .topbar h1')?.addEventListener("click", () => {
+document.addEventListener("click", (event) => {
+  if (!event.target.closest("[data-reset-demo]")) return;
   titleTaps += 1;
   if (titleTaps < 5) return;
   titleTaps = 0;
