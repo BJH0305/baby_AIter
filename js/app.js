@@ -116,7 +116,7 @@ function render() {
 }
 
 // 선택한 지도법별 피드백 입력과 저장된 기록을 보여 준다.
-function renderLog() {
+function renderLegacyLog() {
   const container = document.getElementById("logContent");
   if (!container) return;
   const data = loadData();
@@ -180,7 +180,7 @@ async function reconsult(button) {
 }
 
 // 홈은 저장된 프로필과 상담, 최근 피드백을 보여 준다.
-function renderHome() {
+function renderLegacyHome() {
   const data = loadData();
   const summary = document.getElementById("profileSummary");
   if (!summary) return;
@@ -205,9 +205,12 @@ function renderHome() {
 // 현재 상담의 결과와 각 지도법의 출처를 표시한다.
 function renderResult() {
   const container = document.getElementById("resultContent");
-  const consult = loadData().consults.find((item) => item.id === currentConsultId);
+  const consult = loadData().consults.find((item) => item.id === currentConsultId) || (!currentConsultId ? getInspections()[0] : null);
   if (!container || !consult) return;
-  if (consult.answer.type === "cause") { renderCauseResult(container, consult); return; }
+  if (consult.answer.type === "cause") { currentConsultId = consult.id; renderCauseResult(container, consult); return; }
+  container.innerHTML = '<div class="empty"><p>이전 상담 기록이에요. 새로운 질문 검사를 시작해 주세요.</p><a class="btn btn-secondary" href="#ask">질문 검사로</a></div>';
+  return;
+  // 아래 옛 상담 결과 코드는 보존하되 화면에서는 사용하지 않는다.
   const labels = { green: "가정 지도", yellow: "관찰 필요", red: "전문가 상담 권장" };
   const answer = consult.answer;
   const cards = consult.cardIds.map((id) => window.KNOWLEDGE.find((card) => card.id === id)).filter(Boolean);
@@ -221,17 +224,63 @@ function renderResult() {
     <div class="section"><h2 class="title-md">근거 자료</h2>${cards.map((card) => `<div class="card"><h3 class="title-md">${esc(card.title)}</h3>${card.evidence ? `<blockquote>${esc(card.evidence)}</blockquote>` : ""}<p class="muted">${esc(card.source)} ${card.verified === false ? '<span class="badge">검수 중</span>' : ""}</p></div>`).join("")}</div>`;
 }
 
-// 원인 후보는 규칙이 정한 순서를 유지하고 선택 답변·원문 근거를 함께 보여 준다.
+// 출처 원본은 그대로 보관하고 화면에서는 기관·자료 제목·쪽수만 표시한다.
+function displaySource(card) {
+  let label = card.source.split(" - 로컬 ")[0].replace(/\s*\(발행기관 \[확인 필요\]\)/g, "").trim();
+  if (label.startsWith("2023년 양육상담")) label = "[기관 확인 필요] - " + label;
+  return `${label} · ${card.page.split(";")[0]}`;
+}
+const feedbackLabels = { yes: "맞아요", some: "일부", no: "아니에요" };
+// 옛 상담과 피드백은 저장소에서 보존하고 새 검사만 목록에 보여 준다.
+function getInspections(data = loadData()) {
+  return data.consults.filter((c) => c.answer?.type === "cause");
+}
+function inspectionTitle(consult) {
+  return consult.answer.candidates.map((c) => window.KNOWLEDGE.find((card) => card.id === c.cardId)?.title).filter(Boolean).join(" · ") || "원인 후보를 좁히기 어려워요";
+}
+function inspectionRow(consult) {
+  return `<div class="card section"><p class="muted">${esc(consult.createdAt)}</p><h3 class="title-md">${esc(inspectionTitle(consult))}</h3><p>결과가 맞았나요? ${esc(feedbackLabels[consult.feedbackResult] || "아직 답하지 않았어요")}</p><button class="btn btn-secondary" type="button" data-consult="${esc(consult.id)}">결과 보기</button></div>`;
+}
+function renderHome() {
+  const data = loadData();
+  document.getElementById("profileSummary").textContent = `${data.profile.name} · 만 2~3세 (${data.profile.ageMonths}개월)`;
+  const recent = getInspections(data).slice(0, 3);
+  document.getElementById("homeRecent").innerHTML = recent.length ? recent.map(inspectionRow).join("") : '<div class="empty"><p>아직 검사 기록이 없어요</p><p>질문에 답하고 원인 후보를 살펴보세요.</p></div>';
+}
+function renderLog() {
+  const inspections = getInspections();
+  document.getElementById("logContent").innerHTML = inspections.length ? inspections.map(inspectionRow).join("") : '<div class="empty"><p>아직 검사 기록이 없어요</p><button class="btn btn-secondary" data-start-quiz>검사 시작하기</button></div>';
+}
+// 첫 화면에는 요약만 표시하고, 선택 답변·AI 설명·원문 근거는 접어 둔다.
 function renderCauseResult(container, consult) {
   const answer = applySafety(consult.answer, consult.input);
   const safety = answer.level === "red" ? '<div class="section card" role="alert"><h2 class="title-md">전문가 상담 권장</h2><p>먼저 물린 사람의 안전과 상처를 확인해 주세요. 육아종합지원센터 또는 소아청소년과에 상담해 보세요.</p></div>' : "";
-  const sources = (text) => esc(text).replace(/https:\/\/[^\s;)]+/g, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">원문 열기</a>`);
-  container.innerHTML = `${safety}<div class="section card"><h2 class="title-md">가능성이 높은 원인 후보예요. 진단이 아니에요.</h2><p>여러 이유가 겹칠 수 있어요. 답변과 연결되는 후보만 보여 드려요.</p><p class="muted">같은 점수의 후보 사이에는 가능성 차이를 뜻하는 순위가 없어요.</p><span class="badge">${consult.source === "ai" ? "AI 설명" : "기본 설명"}</span></div>` + (answer.candidates.length ? answer.candidates.map((candidate) => {
+  container.innerHTML = `${safety}<div class="section"><p>가능성이 높은 원인 후보예요. 진단이 아니에요.</p><p class="muted">여러 이유가 겹칠 수 있으며, 동점 후보의 순서는 가능성 차이를 뜻하지 않아요.</p><span class="badge">${consult.source === "ai" ? "AI 설명" : "기본 설명"}</span></div>` + (answer.candidates.length ? answer.candidates.map((candidate) => {
     const card = window.KNOWLEDGE.find((c) => c.id === candidate.cardId);
     if (!card) return "";
-    return `<article class="section card"><h2 class="title-md">${esc(card.title)}</h2><p>선택한 답변: ${esc(scoreCauses(consult.input).find((c) => c.cardId === card.id)?.reasons.join(" / ") || "[확인 필요]")}</p><p>왜 이렇게 봤나요: ${esc(candidate.why)}</p><p>${esc(card.explain)}</p><p>이럴 땐 이렇게: ${esc(card.tip)}</p><p class="muted source-text">출처: ${sources(card.source)}</p><p class="muted">쪽수: ${esc(card.page)}</p><blockquote>${esc(card.evidence)}</blockquote>${card.verified === false ? '<span class="badge">검수 중</span>' : ""}</article>`;
-  }).join("") : '<div class="section empty"><p>답변만으로 원인 후보를 좁히기 어려워요.</p><p>관찰 내용을 확인하고 다시 답해 주세요.</p></div>') + '<a class="btn btn-secondary btn-block" href="#ask">답변 다시 살펴보기</a>';
+    const selected = scoreCauses(consult.input).find((c) => c.cardId === card.id)?.reasons.join(" / ") || "[확인 필요]";
+    const same = (candidate.why || "").replace(/\s/g, "") === selected.replace(/\s/g, "");
+    const summary = card.explain.match(/^[^。.!?]+[。.!?]?/)?.[0] || card.explain;
+    return `<article class="section card cause-card"><h2 class="title-md">${esc(card.title)}</h2><p>${esc(summary)}</p><p><b>이럴 땐 이렇게</b><br>${esc(card.tip)}</p><details><summary>근거 보기</summary><div class="evidence-body"><p>선택한 답변: ${esc(selected)}</p>${!same ? `<p>왜 이렇게 봤나요: ${esc(candidate.why)}</p>` : ""}<p class="muted source-text">${esc(displaySource(card))}</p><blockquote>${esc(card.evidence)}</blockquote>${card.verified === false ? '<span class="badge">검수 중</span>' : ""}</div></details></article>`;
+  }).join("") : '<div class="section empty"><p>답변만으로 원인 후보를 좁히기 어려워요.</p><p>관찰 내용을 확인하고 다시 답해 주세요.</p></div>') + `<div class="section card"><h2 class="title-md">결과가 맞았나요?</h2><div class="chips" role="group" aria-label="결과 피드백">${Object.entries(feedbackLabels).map(([value, label]) => `<button type="button" class="chip ${consult.feedbackResult === value ? "on" : ""}" aria-pressed="${consult.feedbackResult === value}" data-cause-feedback="${value}" data-inspection="${esc(consult.id)}">${label}</button>`).join("")}</div></div><a class="btn btn-secondary btn-block" href="#ask">답변 다시 살펴보기</a><a class="btn btn-ghost btn-block" href="#log">검사 기록 보기</a>`;
 }
+// 한 탭으로 검사별 피드백을 갱신한다. 이전 지도법 피드백과 섞지 않는다.
+document.addEventListener("click", (event) => {
+  const feedback = event.target.closest("[data-cause-feedback]");
+  if (feedback) {
+    const data = loadData(), consult = getInspections(data).find((c) => c.id === feedback.dataset.inspection);
+    if (!consult || !feedbackLabels[feedback.dataset.causeFeedback]) return;
+    consult.feedbackResult = feedback.dataset.causeFeedback;
+    if (saveData(data)) { currentConsultId = consult.id; render(); toast("결과에 대한 답변을 저장했어요"); }
+    else toast("저장하지 못했어요");
+  }
+  if (event.target.closest("[data-start-quiz]")) {
+    quizIndex = 0;
+    for (const id of Object.keys(quizAnswers)) delete quizAnswers[id];
+    document.getElementById("askText").value = "";
+    renderQuiz(); location.hash = "#ask";
+  }
+});
 
 function refreshIcons() {
   if (window.lucide) window.lucide.createIcons();

@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap" />
-  <link rel="stylesheet" href="css/styles.css?v=scope19" />
+  <link rel="stylesheet" href="css/styles.css?v=scope20" />
   <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 </head>
 <body>
@@ -16,9 +16,8 @@
       <header class="topbar"><h1>베이비 AI터</h1></header>
       <main class="content">
         <div class="section card"><h2 class="title-md">아이 프로필</h2><p id="profileSummary"></p><button class="btn btn-secondary" id="editProfile" type="button">수정</button></div>
-        <div class="section card"><h2 class="title-md">이번 주 시도한 지도법</h2><p id="weeklyCount"></p></div>
-        <div class="section"><h2 class="title-md">진행 중 상담</h2><div id="currentSummary"></div></div>
-        <div class="section"><h2 class="title-md">최근 기록</h2><div id="homeRecent"></div></div>
+        <div class="section"><button class="btn btn-primary btn-block" type="button" data-start-quiz>검사 시작하기</button></div>
+        <div class="section"><h2 class="title-md">최근 검사</h2><div id="homeRecent"></div></div>
       </main>
     </section>
     <section class="screen" data-screen="ask" hidden>
@@ -38,7 +37,7 @@
     </section>
     <section class="screen" data-screen="result" hidden>
       <header class="topbar"><a class="icon-btn" href="#ask" aria-label="뒤로"><i data-lucide="chevron-left"></i></a><h1>결과</h1></header>
-      <main class="content" id="resultContent"><div class="empty"><p>아직 상담 결과가 없어요</p><a class="btn btn-secondary" href="#ask">상담하기</a></div></main>
+      <main class="content" id="resultContent"><div class="empty"><p>아직 검사 결과가 없어요</p><a class="btn btn-secondary" href="#ask">질문 검사</a></div></main>
     </section>
     <section class="screen" data-screen="log" hidden>
       <header class="topbar"><h1>기록</h1></header>
@@ -46,18 +45,18 @@
     </section>
     <nav class="tabbar" id="tabbar" aria-label="주 메뉴">
       <a href="#home" data-tab="home"><i data-lucide="house"></i>홈</a>
-      <a href="#ask" data-tab="ask"><i data-lucide="message-circle"></i>상담하기</a>
+      <a href="#ask" data-tab="ask"><i data-lucide="message-circle"></i>질문 검사</a>
       <a href="#log" data-tab="log"><i data-lucide="list"></i>기록</a>
     </nav>
   </div>
   <div class="sheet-backdrop" id="sheetBackdrop"></div>
   <div class="sheet" id="sheet"><div id="sheetBody"></div><button class="btn btn-ghost btn-block" id="sheetClose">닫기</button></div>
   <div class="toast" id="toast"></div>
-  <script src="js/knowledge.js?v=scope19"></script>
-  <script src="js/mock.js?v=scope19"></script>
-  <script src="js/config.js?v=scope19"></script>
-  <script src="js/questions.js?v=scope19"></script>
-  <script src="js/ai.js?v=scope19"></script>
-  <script src="js/app.js?v=scope19"></script>
+  <script src="js/knowledge.js?v=scope20"></script>
+  <script src="js/mock.js?v=scope20"></script>
+  <script src="js/config.js?v=scope20"></script>
+  <script src="js/questions.js?v=scope20"></script>
+  <script src="js/ai.js?v=scope20"></script>
+  <script src="js/app.js?v=scope20"></script>
 </body>
 </html>
