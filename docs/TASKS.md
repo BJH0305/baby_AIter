@@ -53,7 +53,7 @@
 - [x] T16. `js/knowledge.js` 재구성: 카드 7개를 원인 카드로 바꾼다. 필드: id(cause-*), title, ageMonths, clues(관찰 단서), explain(부모용 1~2문장), questions(관련 질문 id), tip(대응 한 줄), redFlags, redFlagKeywords, source, page, evidence, verified(false). 옛 지도법 카드는 삭제하지 말고 맨 아래 주석 처리.
   - 메모: js/knowledge.js, js/ai.js, js/app.js / 필드·인용 길이·기존 상담 호환 검사 통과 / 사람 원문 검수 미완료
 - [x] T17. 질문 검사 화면(`#ask` 교체): 한 화면에 질문 하나 + 상단 진행 바 + 하단 큰 선택 버튼. 질문 5~7개(직전 상황, 누구를, 장소·시간, 컨디션, 이앓이 시기, 말 표현 수준, 최근 환경 변화), 각 문항은 2~4지선다. 마지막에 선택 입력(한 줄 메모). 뒤로 가기 가능. 문항 정의는 `js/questions.js` 한 파일에 모은다. K-DST 문항 금지.
-  - 메모: index.html, js/questions.js, js/app.js, js/knowledge.js / 구문·문항 수·카드 참조·위험 선택지 검사 통과, Pages 실클릭은 push 후 확인 / 사람 원문 검수 미완료
+  - 메모: index.html, js/questions.js, js/app.js, js/knowledge.js / 구문·문항 수·카드 참조·위험 선택지 검사 통과, Pages 7문항·이전 이동 실클릭 확인 완료 / 사람 원문 검수 미완료
 - [x] T18. 원인 점수 + 결과 화면: 답변 → 카드별 점수(규칙 기반, `js/ai.js`의 `scoreCauses`)로 상위 2~3개. 결과 화면: 원인 후보 카드(이름, 왜 그렇게 봤는지 = 선택한 답변, explain, tip, 출처·쪽수·근거 문장), 상단에 "가능성이 높은 원인 후보예요. 진단이 아니에요." 고정 문구. %·정확도 표시 금지. 안전 규칙(redFlagKeywords, 위험 답변)은 그대로 최우선.
   - 메모: js/ai.js, js/app.js, js/knowledge.js, index.html, css/styles.css / 순위·근거 부족·연령·위험 답변·위험 단어 검사 통과; Pages 캐시 혼합 방지 버전 추가 / 사람 원문 검수 미완료
 - [x] T19. AI 설명 연결: live 모드면 상위 후보 카드 + 답변을 Worker로 보내 "왜 이 원인 같은지" 설명 문장만 AI가 다시 쓴다(순위는 규칙이 정함). `api/worker.js`에 `task: "cause"` 분기와 전용 SYSTEM 프롬프트 추가(카드 밖 내용 금지, 진단 금지, JSON `{explanations:[{cardId, why}]}`). 실패하면 규칙 설명 그대로. **worker.js 수정 후 "⏸ 확인 필요"로 멈추고 배준희에게 재배포 요청.**
@@ -63,8 +63,8 @@
 - [x] T21. 디자인 적용: `docs/design-ref/reference.html`(한서희 제공)의 색·글꼴·둥근 카드·여백만 `css/styles.css` :root 토큰에 반영(cream #f7f6f1, green #527b68, ink #24332e, Noto Sans KR). 구조는 지금 모바일 앱 그대로. 서비스 이름은 "베이비 AI터"(레퍼런스의 "베이비 AI 시터" 아님). 레퍼런스의 K-DST 문구는 가져오지 않는다.
   - 메모: css/styles.css, index.html / CSS 변경은 root 토큰 내부만 확인; 기존 화면 생성 검사 통과, Pages 크림 배경·녹색·375px 시각 확인 완료 / 사람 원문 검수 미완료
 - [x] T22. 시연 데이터·안정화: 도윤(38개월) 시나리오를 질문 검사 기준으로 바꾸고(검사 2회 기록), 375px·콘솔 에러 0·모든 버튼 점검. favicon 추가. Pages 주소(https://bjh0305.github.io/baby_AIter/)에서 확인.
-  - 메모: js/app.js, index.html, favicon.svg, css/styles.css, docs/DATA.md / Pages 실클릭: AI·위험 우선·후보 없음·피드백 유지·초기화 통과, 콘솔 오류·가로 넘침 없음 / 사람 원문 검수 미완료
-  - 메모: js/app.js, index.html, favicon.svg, css/styles.css / 시연 데이터·초기화·파비콘 구현 및 로컬 통합 검사 통과 / Pages 375px·전체 실클릭 확인 중
+  - 메모: js/app.js, index.html, favicon.svg, css/styles.css, docs/DATA.md / scope22-final에서 22.5px 한 줄 요약·펼친 전체 설명·내부 메모 미노출 확인; Pages 실클릭: AI·위험 우선·후보 없음·피드백 유지·초기화 통과, 콘솔 오류·가로 넘침 없음 / 사람 원문 검수 미완료
+  - 메모: js/app.js, index.html, favicon.svg, css/styles.css / 시연 데이터·초기화·파비콘 구현 및 로컬 통합 검사 통과 / Pages 375px·전체 실클릭 확인 완료
 
 ## 질문
 (Codex가 막히면 여기에 적는다)
