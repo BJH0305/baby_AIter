@@ -28,7 +28,7 @@ function loadData() {
       for (const consult of data.consults) {
         for (const method of consult.answer?.methods || []) {
           const card = window.KNOWLEDGE.find((item) => item.id === method.cardId);
-          const index = card?.methods.indexOf(method.title) ?? -1;
+          const index = card?.methods?.indexOf(method.title) ?? -1;
           if (!/^m\d+$/.test(method.id) || index < 0) continue;
           const oldId = method.id, newId = `${card.id}-${index}`;
           method.id = newId;

@@ -6,8 +6,8 @@ function searchCards({ target = "", situation = "", text = "", ageMonths } = {})
     .filter((card) => ageMonths == null || ageMonths === "" ||
       (Number(ageMonths) >= card.ageMonths[0] && Number(ageMonths) <= card.ageMonths[1]))
     .map((card, index) => {
-      let score = target && card.targets.includes(target) ? 2 : 0;
-      for (const tag of card.tags) {
+      let score = target && (card.targets || []).includes(target) ? 2 : 0;
+      for (const tag of (card.tags || card.clues || [])) {
         const keyword = tag.toLowerCase();
         if (input.includes(keyword) || words.some((word) => word.length >= 2 && keyword.includes(word))) score += 1;
       }
@@ -33,7 +33,9 @@ function buildPrompt(input, cards, history) {
 // 일치하는 카드가 없으면 기본 카드를 사용한다.
 function getConsultCards(input) {
   const cards = searchCards(input);
-  return cards.length ? cards : window.KNOWLEDGE.filter((card) => card.id === "bite-basic");
+  // 이전 상담 화면도 단계별 변경 중 동작하도록 원인 카드에서 임시 호환 값을 만든다.
+  const selected = cards.length ? cards : window.KNOWLEDGE.slice(0, 3);
+  return selected.map((card) => ({ ...card, causes: card.causes || [card.explain], methods: card.methods || [card.tip] }));
 }
 // 서버 답변의 지도법이 보낸 카드에 속하는지 검사한다.
 function isValidAnswer(answer, cards) {
