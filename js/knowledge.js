@@ -1,7 +1,7 @@
 // 근거 자료(지식 카드) — AI는 이 카드 안의 내용만 근거로 답한다.
 // ⚠ 초안: verified=false 카드는 유아교육과 팀원이 공공기관 자료와 대조해 내용·출처를 확인한 뒤 true로 바꾼다.
 // 출처는 실제로 확인한 자료 제목과 링크만 쓴다. 확인 전에는 "[확인 필요]".
-// 필드: id, title, ageMonths[최소,최대], targets(친구/동생), tags(검색 키워드), causes(원인), methods(지도법), redFlags(전문가 상담 신호), source, verified
+// 필드: id, title, ageMonths[최소,최대], targets(친구/동생), tags(검색 키워드), causes(원인), methods(지도법), redFlags(전문가 상담 신호 설명), redFlagKeywords(입력에서 찾을 위험 신호 단어), source, evidence(선택), verified
 window.KNOWLEDGE = [
   {
     id: "bite-basic",
@@ -16,6 +16,7 @@ window.KNOWLEDGE = [
       "'화났구나, 장난감 갖고 싶었구나'처럼 감정을 말로 바꿔 주기"
     ],
     redFlags: ["상처가 날 정도로 반복", "48개월 이후에도 자주", "자기 몸을 깨묾"],
+    redFlagKeywords: ["상처", "피가", "피 났", "멍", "자기 몸", "자기 손", "자기 팔", "몇 달째", "점점 심해"],
     source: "[확인 필요]",
     verified: false
   },
@@ -32,6 +33,7 @@ window.KNOWLEDGE = [
       "동생 없이 첫째를 칭찬하는 순간을 자주 만들기"
     ],
     redFlags: ["동생을 다치게 할 위험이 계속됨"],
+    redFlagKeywords: ["다쳤", "다치게", "얼굴을 물", "상처", "피가"],
     source: "[확인 필요]",
     verified: false
   },
@@ -48,6 +50,7 @@ window.KNOWLEDGE = [
       "어린이집 선생님과 깨물기가 일어나는 시간·상황을 공유하기"
     ],
     redFlags: [],
+    redFlagKeywords: [],
     source: "[확인 필요]",
     verified: false
   }

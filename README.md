@@ -1,43 +1,49 @@
-# SW-DNA² 챌린지 스타터 키트
+# 베이비 AI터
 
-이 폴더 전체가 그대로 GitHub 저장소이자 Codex 작업 폴더다. Codex는 맨 위의 `AGENTS.md`를 자동으로 읽는다.
+친구·동생을 깨무는 만 2~3세 아이의 부모가, **공공기관 자료에 근거한 연령별 지도법**을 받아 일상에서 적용해 보고, **적용 결과에 따라 방법을 조정**하도록 돕는 AI 상담 웹.
+2026 CWNU SW-DNA² 챌린지 · 팀 베이비 AI터 (배준희·한서희·이성찬)
 
+## 진행 현황 (작업마다 자동 갱신 — 자세한 기록은 `docs/CHANGELOG.md`)
+| 단계 | 내용 | 상태 |
+| --- | --- | --- |
+| 기획 | 페르소나·문제정의·작업 목록 | ✅ 완료 |
+| 최저 (T1~T6) | 화면 4개, 근거 검색, 상담·결과 | ✅ 완료 |
+| 중간 (T7~T10) | 피드백 기록, 재상담, 안전장치, 시연 데이터 | ✅ 완료 |
+| 1차 검토 (R1~R7) | 입력별 근거 답변, 위험 신호, 정리 | 🟡 진행 중 |
+| AI 연결 (T12) | 서버 함수 + 프론트 live 모드 | ⬜ 대기 |
+| 디자인 (T13) | 레퍼런스 반영 | ⬜ 대기 (캡처 필요) |
+| 안정화 (T14) | 375px, 콘솔, 빈 상태 | ⬜ 대기 |
+| 근거 카드 검수 | 한서희 — docs/sources/cards.md | 🟡 진행 중 |
+
+## 실행
+- `index.html`을 브라우저로 열면 바로 동작 (서버 불필요, 데이터는 브라우저 저장소)
+- 시연 초기화: 홈 상단 제목을 5번 연속 탭
+
+## 동작 구조
 ```
-swdna-starter/
-├─ AGENTS.md              Codex 작업 규칙 (자동으로 읽힘)
-├─ DESIGN.md              디자인 규칙 + 검수 체크리스트
-├─ index.html             앱 화면 템플릿 (더블클릭으로 열림)
-├─ css/styles.css         디자인 토큰 + 공통 컴포넌트
-├─ js/data.js             예시 데이터 (현장에서 교체)
-├─ js/app.js              화면 전환, 저장, 토스트, 바텀시트
-├─ docs/
-│  ├─ CONTEXT.md          Codex용 대회 상황 브리핑 (연결 직후 prompts 0-1번으로 먹임)
-│  ├─ idea-brief.md       아이디어 확정 후 B가 채우는 기획서
-│  ├─ FEATURE_CATALOG.md  기능 16종: 구현 방식 Lv1/Lv2, 시연 포인트, 예상 질문과 답
-│  ├─ QNA.md              질의응답 공통 답변 (보안, AI 활용, 기획)
-│  └─ progress-log.md     매 정각 진행 기록 (꾸럼e에 옮겨 적기)
-└─ guide/                 사람용 안내서
-   ├─ 00-리더-진행순서.md   현장 도착부터 발표까지 리더가 따라갈 순서
-   ├─ 01-아이디어-고르기.md  심사 기준에 맞는 아이디어 고르는 법, 점수표
-   ├─ A-빌더.md            레포 생성 → Codex 연결 → 구현 루프 → 동결·영상
-   ├─ B-기획기록.md         기획서, 꾸럼e 기록, 사용자 의견, 근거 자료
-   ├─ C-발표디자인.md       발표 PDF, 화면 검수, 리허설
-   ├─ prompts.md          Codex 지시문 (1번이 아이디어→명세)
+상담 입력(대상·상황·설명·개월 수)
+  → 근거 카드 검색 (js/ai.js searchCards, js/knowledge.js)
+  → AI 답변 (api/worker.js → OpenAI, 실패 시 규칙 기반 답변)
+  → 원인 해석 + 지도법 3개 + 근거 출처
+  → 적용 결과 기록 (효과 있음/조금/없음)
+  → 결과 반영 재상담 (효과 있던 방법 유지, 없던 방법 교체)
+  → 위험 신호·장기 무개선 시 전문가 상담 안내 (코드 규칙)
 ```
 
-## 흐름 한 줄 요약
-Codex 연결 → `guide/prompts.md` 0-1번(상황 이해) → 아이디어 회의(0-2번 평가) → 확정 → B가 `docs/idea-brief.md` 채움 → A가 `guide/prompts.md` 1번 실행 → **`docs/spec.md` 자동 생성**(기능 선택, 구현 순서별 지시문, 시연 시나리오, 예상 질문 10개와 답, 슬라이드 문장) → spec 5번 지시문대로 구현 → 21:30 동결 → 영상·발표.
+## 폴더
+| 위치 | 내용 |
+| --- | --- |
+| `index.html`, `css/`, `js/` | 웹 화면과 동작 |
+| `js/knowledge.js` | 근거 카드 (AI는 이 내용만 근거로 답함) |
+| `api/worker.js` | AI 답변 서버 함수 (API 키는 Cloudflare 비밀 값에만 있음) |
+| `docs/idea-brief.md` | 기획 (문제·고객·화면·시나리오) |
+| `docs/TEAM.md` | 팀 역할·소통 규칙 |
+| `CONTRIBUTING.md` | **팀원 자료·레퍼런스 업로드 가이드** |
+| `docs/sources/` | 근거 카드 제출함, 참고 링크 |
+| `docs/design-ref/` | 디자인 레퍼런스 캡처 |
+| `docs/TASKS.md`, `docs/REVIEW.md`, `docs/RUN.md`, `docs/DATA.md`, `AGENTS.md` | Codex·Claude 작업 문서 (팀원 수정 금지) |
+| `guide/` | 대회 진행 안내서 |
 
-## 오늘 밤
-1. Mobbin(mobbin.com)에서 참고할 앱 화면 미리 골라 두기
-2. `guide/A-빌더.md`의 "오늘 밤"대로 설치 확인 (GitHub 저장소는 현장에서 만든다)
-3. B·C 역할을 맡을 팀원에게 `guide/B-기획기록.md`, `guide/C-발표디자인.md` 전달 (현장에서 링크로 보여줘도 됨)
-
-## 와이파이 대비 (선택)
-글꼴은 Google Fonts, 아이콘은 Lucide를 인터넷에서 불러온다. 끊기면 글꼴은 기본 글꼴로 바뀌어 보이고 아이콘이 사라진다.
-아이콘만이라도 로컬에 두려면 저장소 폴더에서:
-```
-mkdir vendor
-curl -L -o vendor/lucide.min.js https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js
-```
-그리고 `index.html`의 Lucide `<script>` 주소를 `vendor/lucide.min.js`로 바꾼다.
+## 보안
+- API 키는 저장소에 없다 (`.gitignore`, Cloudflare Secret)
+- 아이 정보는 가명·개월 수만, 브라우저에만 저장

@@ -51,7 +51,7 @@
 ```
 - buildPrompt는 history가 있으면 "효과 있던 방법은 유지·강화, 효과 없던 방법은 근거 카드의 다른 방법으로 교체, changes에 무엇을 바꿨는지 요약"을 지시한다.
 
-## 6. mock 선택 규칙 (T3)
+## 6. mock 선택 규칙 (T3) — ⚠ REVIEW R1로 대체됨: 고정 MOCK 대신 `ruleAnswer(input, cards, history)` 규칙 기반 생성
 - `history`가 null 또는 feedback이 비어 있으면 → `MOCK.first`
 - 그 외 → `MOCK.second` (changes 포함)
 - MOCK 답변 문장은 `js/knowledge.js` 카드 문장만 사용. 시나리오는 idea-brief 6번(도윤, 동생, 안고 있을 때 → 2차에서 단독 시간 유지, 즉시 제지 교체)

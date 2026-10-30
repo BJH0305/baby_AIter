@@ -1,0 +1,11 @@
+# 비밀 값은 절대 커밋하지 않는다
+.env
+.env.*
+.dev.vars
+*.key
+secrets*
+# 도구 파일
+node_modules/
+.wrangler/
+.DS_Store
+Thumbs.db

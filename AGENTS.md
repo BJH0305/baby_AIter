@@ -6,11 +6,12 @@ Codex는 작업 전에 이 파일, `docs/CONTEXT.md`(대회 상황·채점·원�
 
 ## 협업 방식 (Claude와 같이 작업한다 — 반드시 지킬 것)
 - 이 프로젝트는 Codex(구현)와 Claude(기획·명세·검토)가 **파일로 협업**한다. 사람(배준희)은 "TASKS 진행해"라고만 말한다.
-- 팀 역할·소통·파일 규칙은 `docs/TEAM.md`를 따른다. 디자인 레퍼런스 캡처는 `docs/design-ref/`에 있다.
+- 팀 역할·소통·파일 규칙은 `docs/TEAM.md`(팀원 업로드 규칙은 `CONTRIBUTING.md`), 데이터 형식은 `docs/DATA.md`를 따른다. 디자인 레퍼런스 캡처는 `docs/design-ref/`에 있다.
 - 작업 시작 전 항상 `docs/REVIEW.md`(검토·수정 요청)를 먼저, 그다음 `docs/TASKS.md`를 읽는다.
 - `REVIEW.md`에 `[ ]` 상태의 수정 요청이 있으면 그것부터 처리한다.
 - `TASKS.md`에서 위에서부터 `[ ]` 인 작업을 **하나씩** 처리한다. 하나 끝날 때마다:
   1. 해당 줄을 `[x]`로 바꾸고 바로 아래에 `  - 메모: 바뀐 파일 / 확인 방법 / 남은 문제` 한 줄을 남긴다.
+  1-1. `docs/CHANGELOG.md` 맨 위에 한 줄 추가, `README.md` 진행 현황 갱신, 커밋 후 `git pull --rebase` → `git push` (자세한 건 `docs/RUN.md` 2번).
   2. 사람에게 3줄 이내로 보고한다.
 - **"docs/RUN.md 읽고 진행해"라고 하면 `docs/RUN.md`(자동 진행 지시서)대로 멈출 조건까지 스스로 계속 진행한다. 애매한 판단은 RUN.md 3·4번대로 허락을 받는다.**
 - "TASKS 진행해"라고 하면 다음 `[ ]` 작업 1개만 처리한다.
@@ -43,9 +44,9 @@ Codex는 작업 전에 이 파일, `docs/CONTEXT.md`(대회 상황·채점·원�
 - 근거 자료(지식 카드)는 `js/knowledge.js`의 `window.KNOWLEDGE` 배열에 둔다(fetch로 로컬 JSON 읽기 금지).
 - **LLM API 키는 절대 프론트 코드(index.html, js/)에 넣지 않는다.** LLM 호출은 `js/ai.js`의 `askAI()` 한 함수로만 하고, 이 함수는:
   - `AI_MODE = "mock"`: 미리 준비한 답변(`js/mock.js`)을 0.8~1.2초 뒤 돌려준다 (기본값, 시연 안전망)
-  - `AI_MODE = "live"`: 키를 숨긴 서버 함수(`api/` 폴더, Cloudflare Worker 등) URL로 요청한다
+  - `AI_MODE = "live"`: 키를 숨긴 서버 함수(`api/worker.js`, Cloudflare Worker) URL로 요청한다. 설정은 `js/config.js`
   - live 호출이 실패하면 자동으로 mock 답변으로 대체하고 토스트로 알린다.
-- AI에게 보내는 프롬프트는 `js/ai.js`의 `buildPrompt()`에서만 만든다. 규칙: 함께 보낸 근거 카드 안의 내용만 사용, 카드에 없으면 모른다고 답, 진단하지 않음, 출처 id를 답변에 표시.
+- live 모드의 실제 프롬프트는 `api/worker.js`(서버)에서 만든다(Claude 관리, Codex 수정 금지). `js/ai.js`의 `buildPrompt()`는 설명·디버그용. 규칙: 함께 보낸 근거 카드 안의 내용만 사용, 카드에 없으면 모른다고 답, 진단하지 않음, 출처 id를 답변에 표시.
 - 위험 신호 판단(전문가 상담 안내)은 AI에게 맡기지 않고 카드의 `redFlags`와 코드 규칙으로 한다.
 - `index.html`을 더블클릭해서 열어도 mock 모드로 동작해야 한다. 콘솔 에러 0개.
 

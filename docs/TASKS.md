@@ -29,11 +29,19 @@
   - 메모: js/app.js / 처음 열거나 홈 제목 5번 탭 / 예시는 2026-10-27~29 고정
 
 ## 실제 AI 연결
-- [ ] T11. 🛑 사람 확인: 대회에서 받은 API 종류(OpenAI/Gemini 등)와 사용 방식 확인. Codex는 여기서 멈추고 "API 정보 필요"라고 알린다.
-- [ ] T12. live 모드: `api/worker.js`(Cloudflare Worker 형식, 키는 환경변수)와 `askAI`의 live 분기 연결. 실패 시 mock 대체 + 토스트. 프론트에 키 없음 확인.
+- [x] T11. 🛑 사람 확인: 대회에서 받은 API 종류(OpenAI/Gemini 등)와 사용 방식 확인.
+  - 메모(Claude): OpenAI 프로젝트 키(sk-proj) 확인, 운영진 사용 허락 받음. 서버 함수 `api/worker.js`는 Claude가 작성 완료. 키는 Cloudflare Secret에만 넣는다(배준희가 직접).
+- [ ] T12. live 모드 프론트 연결 (서버 함수 `api/worker.js`는 이미 있음 — 수정하지 말 것):
+  - `js/config.js` 새로 만들기: `window.APP_CONFIG = { AI_MODE: "mock", API_URL: "" }` (URL은 비밀이 아님. 배포 후 배준희가 값을 채움). index.html에서 ai.js보다 먼저 불러오기
+  - `askAI`: AI_MODE가 "live"이고 API_URL이 있으면 `POST API_URL` body `{ input, cards: searchCards 결과(id,title,causes,methods), history }` → 응답 `{answer}`
+  - 응답 검증: methods가 3개이고 각 id가 `카드id-인덱스` 형식으로 보낸 카드에 실제로 있는지 확인. 아니면 규칙 기반 답변(ruleAnswer)으로 대체
+  - 12초 넘거나 실패하면 규칙 기반 답변 + 토스트 "AI 연결이 느려 기본 답변을 보여 드려요"
+  - 결과 화면 상단에 작은 배지: "AI 답변" 또는 "기본 답변" (어느 쪽인지 정직하게 표시). Consult에 `source: "ai" | "rule"` 저장
+  - 안전장치(applySafety)는 AI 답변에도 그대로 적용
+  - 확인: config가 mock일 때 지금과 똑같이 동작. 프론트 코드 어디에도 키가 없음
 
 ## 마무리
-- [ ] T13. 🛑 사람 확인: Mobbin 레퍼런스 캡처 받기 → `css/styles.css` :root 토큰만 조정.
+- [ ] T13. 🛑 사람 확인: 레퍼런스 캡처(docs/design-ref/, Calm 기준) 받기 → `css/styles.css` :root 토큰만 조정.
 - [ ] T14. 안정화: 375px 가로 스크롤 없음, 콘솔 에러 0, 눌러지는 것 전부 동작, 빈 상태·토스트 점검.
 
 ## 질문
@@ -44,3 +52,9 @@
 선택지: A. 카드 문장으로 고정된 시연용 1차·2차 답변을 만들고 T8에서 피드백 연결 / B. 지금 피드백 데이터 형식과 선택 규칙부터 정해 구현
 추천: A — 현재 작업 범위와 시연 시나리오에 맞고 피드백 구조는 T7~T8에서 정할 수 있음.
   - 결정(Claude): **A로 진행.** 단, 데이터 형식과 mock 선택 규칙은 지금 `docs/DATA.md`대로 맞춘다 (askAI의 history 형식, Answer 형식, MOCK.first/second 선택 규칙). T7~T8은 같은 형식에 연결만 한다.
+
+⏸ 확인 필요 (T11)
+상황: 실제 AI 연결에 사용할 대회 API 종류와 사용 방식이 아직 확인되지 않음.
+선택지: A. 대회에서 받은 API 종류와 사용 방식을 알려주기 / B. 우선 시연용 mock으로 유지하기
+추천: A — 실제 AI 연결 작업의 범위를 정할 수 있음. API 키는 채팅이나 코드에 적지 않음.
+  - 결정(Claude): API 사용 확정(OpenAI, 운영진 허락). REVIEW R1~R7을 먼저 처리한 뒤 T12 진행. 서버 함수 배포·키 등록은 배준희가 직접 한다.
