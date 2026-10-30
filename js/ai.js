@@ -51,7 +51,7 @@ function validCauseExplanations(answer, candidates) {
 async function askCauseAI(input, requestedMode = "fast") {
   const base = createCauseAnswer(input), config = window.APP_CONFIG || {};
   base.level = applySafety(base, input).level;
-  const mode = "fast";
+  const mode = requestedMode === "deep" ? "deep" : "fast";
   if (base.level === "red" || !base.candidates.length || config.AI_MODE !== "live") return base;
   let timer;
   const controller = new AbortController();

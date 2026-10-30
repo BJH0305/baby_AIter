@@ -104,3 +104,5 @@ h1,h2,h3 { line-height:1.35; letter-spacing:-.025em; }.title-md { font-size:17px
 .answers-panel > .btn { display:flex; margin-top:20px; border-radius:12px; font-size:12px; }
 @media (max-width:480px) { .analysis-loader { --R:110px; --size:290px; } }
 @media (prefers-reduced-motion:reduce) { .option-list.has-selection .question-option:not(.is-selected) { opacity:1; } }
+
+#quizMode .chips { margin-top:8px; }#quizMode .chip { font-size:14px; padding:12px; }.mode-help { font-size:13px; margin-top:8px; }

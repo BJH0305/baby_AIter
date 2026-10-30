@@ -224,7 +224,7 @@ function renderCauseResult(container, consult) {
     const label = value === "other" ? `기타: ${consult.input.otherAnswers?.[question.id] || ""}` : question.options.find((option) => option.value === value)?.label || "선택하지 않았어요";
     return `<div class="answer-row"><p>Q${index + 1}. ${esc(question.title)}</p><b>${esc(label)}</b></div>`;
   }).join("");
-  container.innerHTML = `${safety}<header class="result-heading"><div class="result-meta"><span class="badge accent">${esc(consult.input.ageMonths)}개월 · ${esc(targetSummary)}</span><span class="badge">${icon("sparkles")}${consult.source === "ai" ? "AI 설명" : "기본 설명"}</span></div><h1 class="result-title">원인 후보</h1><p>가능성이 높은 원인 후보예요. 진단이 아니에요.</p><p class="muted result-note">원인은 여러 개가 함께 있을 수 있어요. 위에 있다고 더 확실한 건 아니에요.</p></header><div class="result-layout"><div class="cause-list">${candidates || '<div class="card empty"><p>답변만으로 원인 후보를 좁히기 어려워요.</p><p>관찰 내용을 확인하고 다시 답해 주세요.</p></div>'}</div><aside class="result-aside"><section class="card answers-panel"><details class="answers-summary" ${window.matchMedia?.("(min-width: 768px)")?.matches ? "open" : ""}><summary><span>내가 답한 내용 요약</span>${icon("chevron-down")}</summary><div class="answers-body">${answers}${consult.input.text ? `<div class="answer-row"><p>추가 메모</p><b>${esc(consult.input.text)}</b></div>` : ""}</div></details><a class="btn btn-secondary btn-block" href="#ask">답변 다시 살펴보기</a></section><div class="card feedback-card"><h2 class="title-md">결과가 맞았나요?</h2><div class="chips" role="group" aria-label="결과 피드백">${Object.entries(feedbackLabels).map(([value, label]) => `<button type="button" class="chip ${consult.feedbackResult === value ? "on" : ""}" aria-pressed="${consult.feedbackResult === value}" data-cause-feedback="${value}" data-inspection="${esc(consult.id)}">${label}</button>`).join("")}</div></div><a class="btn btn-primary btn-block" href="#log">${icon("clock")}검사 기록 보기</a></aside></div>`;
+  container.innerHTML = `${safety}<header class="result-heading"><div class="result-meta"><span class="badge accent">${esc(consult.input.ageMonths)}개월 · ${esc(targetSummary)}</span><span class="badge">${icon("sparkles")}${consult.source === "ai" ? (consult.mode === "deep" ? "AI 설명 · 깊게" : "AI 설명 · 빠른") : "기본 설명"}</span></div><h1 class="result-title">원인 후보</h1><p>가능성이 높은 원인 후보예요. 진단이 아니에요.</p><p class="muted result-note">원인은 여러 개가 함께 있을 수 있어요. 위에 있다고 더 확실한 건 아니에요.</p></header><div class="result-layout"><div class="cause-list">${candidates || '<div class="card empty"><p>답변만으로 원인 후보를 좁히기 어려워요.</p><p>관찰 내용을 확인하고 다시 답해 주세요.</p></div>'}</div><aside class="result-aside"><section class="card answers-panel"><details class="answers-summary" ${window.matchMedia?.("(min-width: 768px)")?.matches ? "open" : ""}><summary><span>내가 답한 내용 요약</span>${icon("chevron-down")}</summary><div class="answers-body">${answers}${consult.input.text ? `<div class="answer-row"><p>추가 메모</p><b>${esc(consult.input.text)}</b></div>` : ""}</div></details><a class="btn btn-secondary btn-block" href="#ask">답변 다시 살펴보기</a></section><div class="card feedback-card"><h2 class="title-md">결과가 맞았나요?</h2><div class="chips" role="group" aria-label="결과 피드백">${Object.entries(feedbackLabels).map(([value, label]) => `<button type="button" class="chip ${consult.feedbackResult === value ? "on" : ""}" aria-pressed="${consult.feedbackResult === value}" data-cause-feedback="${value}" data-inspection="${esc(consult.id)}">${label}</button>`).join("")}</div></div><a class="btn btn-primary btn-block" href="#log">${icon("clock")}검사 기록 보기</a></aside></div>`;
 }
 // 한 탭으로 검사별 피드백을 갱신한다. 이전 지도법 피드백과 섞지 않는다.
 document.addEventListener("click", (event) => {
@@ -311,7 +311,7 @@ document.getElementById("askForm")?.addEventListener("submit", async (event) => 
   location.hash = "#result";
   showScreen("result");
   try {
-    const mode = "fast";
+    const mode = answerMode;
     const result = await waitForAnalysis(askCauseAI(input, mode));
     pendingConsult = { input, answer: applySafety(result, input) };
     const data = loadData();
@@ -340,6 +340,10 @@ document.getElementById("askForm")?.addEventListener("submit", async (event) => 
 
 // 질문 답변은 뒤로 가도 유지하며 미응답 상태에서는 진행하지 않는다.
 let quizIndex = 0;
+let answerMode = "fast"; // 빠른 답변 기본, 깊게 생각하기는 선택
+const MODE_HELP = { fast: "몇 초 안에 원인 후보와 이유를 보여 드려요.", deep: "자료를 더 꼼꼼히 비교해요. 조금 더 걸릴 수 있어요." };
+function setAnswerMode(mode) { answerMode = mode === "deep" ? "deep" : "fast"; document.querySelectorAll("[data-answer-mode]").forEach((b) => { const on = b.dataset.answerMode === answerMode; b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); }); const help = document.getElementById("modeHelp"); if (help) help.textContent = MODE_HELP[answerMode]; }
+document.addEventListener("click", (e) => { const b = e.target.closest("[data-answer-mode]"); if (b) setAnswerMode(b.dataset.answerMode); });
 const quizAnswers = {};
 const quizOtherAnswers = {};
 function isQuizAnswered(q) { return Boolean(quizAnswers[q.id]) && (quizAnswers[q.id] !== "other" || Boolean(quizOtherAnswers[q.id]?.trim())); }
@@ -356,6 +360,7 @@ function renderQuiz() {
   document.getElementById("quizNext").disabled = !done && !isQuizAnswered(question);
   document.getElementById("quizSubmit").hidden = !done;
   document.getElementById("quizNote").hidden = !done;
+  document.getElementById("quizMode").hidden = !done;
   refreshIcons();
 }
 // 버튼을 다시 만들지 않고 선택 상태를 갱신하여 전환 효과와 키보드 초점을 유지한다.

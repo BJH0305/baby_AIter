@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" />
-  <link rel="stylesheet" href="css/styles.css?v=fix-0235" />
+  <link rel="stylesheet" href="css/styles.css?v=mode-0240" />
   <script defer src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 </head>
 <body>
@@ -30,6 +30,7 @@
           <p class="muted section" id="askAge"></p>
           <div id="questionContent" aria-live="polite"></div>
           <div class="field" id="quizNote" hidden><label class="label" for="askText">추가 메모 (선택)</label><input class="input" id="askText" maxlength="300" placeholder="특별한 상황이 있으면 적어 주세요" /></div>
+          <div class="field" id="quizMode" hidden><p class="label">답변 방식</p><div class="chips" role="group" aria-label="답변 방식"><button type="button" class="chip on" data-answer-mode="fast" aria-pressed="true">빠른 답변</button><button type="button" class="chip" data-answer-mode="deep" aria-pressed="false">깊게 생각하기</button></div><p class="muted mode-help" id="modeHelp">몇 초 안에 원인 후보와 이유를 보여 드려요.</p></div>
           <div class="section"><button class="btn btn-secondary" id="quizBack" type="button" hidden>이전 질문</button></div>
           <button class="btn btn-primary btn-block" id="quizNext" type="button" disabled>다음</button>
           <button class="btn btn-primary btn-block" id="quizSubmit" type="submit" hidden>원인 후보 보기</button>
@@ -53,10 +54,10 @@
   <div class="sheet-backdrop" id="sheetBackdrop"></div>
   <div class="sheet" id="sheet"><div id="sheetBody"></div><button class="btn btn-ghost btn-block" id="sheetClose">닫기</button></div>
   <div class="toast" id="toast"></div>
-  <script defer src="js/knowledge.js?v=fix-0235"></script>
-  <script defer src="js/config.js?v=fix-0235"></script>
-  <script defer src="js/questions.js?v=fix-0235"></script>
-  <script defer src="js/ai.js?v=fix-0235"></script>
-  <script defer src="js/app.js?v=fix-0235"></script>
+  <script defer src="js/knowledge.js?v=mode-0240"></script>
+  <script defer src="js/config.js?v=mode-0240"></script>
+  <script defer src="js/questions.js?v=mode-0240"></script>
+  <script defer src="js/ai.js?v=mode-0240"></script>
+  <script defer src="js/app.js?v=mode-0240"></script>
 </body>
 </html>
