@@ -19,7 +19,8 @@
   - 메모: js/app.js / 결과 카드 코드 및 문법 확인 / 중복 문장 제거와 근거 표시
 - [x] R3. 위험 신호 규칙이 실제 문장에서 동작하지 않음 ("상처가 났어요 피가 났어요"를 넣어도 '가정 지도'). `applySafety`가 카드의 `redFlags` 대신 **`redFlagKeywords`**(knowledge.js에 Claude가 추가함)를 입력 text·situation에서 찾도록 바꾼다. red일 때 안내 카드는 결과 화면 맨 위(달라진 점보다 위)에 보이게 한다.
   - 메모: js/app.js / 상처 문장으로 위험 신호 확인 / 위험 신호 검색과 안내 위치 개선
-- [ ] R4. 스타터 키트 예제 코드가 남아 있음. `js/data.js`의 SEED_ITEMS와 이를 쓰는 코드(`STORE_KEY`, `store`, `items`, `itemRow`, `filter`/`filterChips`, `catChips`, `newForm`, `.list-item` 클릭 시 바텀시트 여는 핸들러, `data-toggle` 핸들러)를 지운다. `index.html`의 `js/data.js` 스크립트도 제거 (파일 삭제는 사람 허락 없이 해도 됨 — 이 항목이 허락이다).
+- [x] R4. 스타터 키트 예제 코드가 남아 있음. `js/data.js`의 SEED_ITEMS와 이를 쓰는 코드(`STORE_KEY`, `store`, `items`, `itemRow`, `filter`/`filterChips`, `catChips`, `newForm`, `.list-item` 클릭 시 바텀시트 여는 핸들러, `data-toggle` 핸들러)를 지운다. `index.html`의 `js/data.js` 스크립트도 제거 (파일 삭제는 사람 허락 없이 해도 됨 — 이 항목이 허락이다).
+  - 메모: js/app.js, js/data.js, index.html / 문법과 예제 참조 확인 / 사용하지 않는 스타터 예제 제거
 - [ ] R5. 시연 데이터 보강: `demoData()` 피드백에 memo를 채운다 (예: 10/27 "동생 낮잠 때 블록 놀이 10분, 깨물기 없었음", 10/28 "물자마자 안 된다고 했더니 더 울고 또 물었음", 10/29 "단독 시간 후 저녁까지 괜찮았음"). 홈 '최근 기록'에는 결과 대신 **지도법 이름 + 결과 배지**로 보여 준다.
 - [ ] R6. 근거 자료 카드에 `card.evidence`가 있으면 인용 문장으로 보여 주고, `card.verified`가 false면 출처 옆에 작은 회색 "검수 중" 배지를 붙인다 (자료 검수가 끝나면 자동으로 사라지게).
 - [ ] R7. 홈 상단 프로필 입력폼이 너무 크다. 홈에는 `도윤 · 38개월` 한 줄 카드 + "수정" 버튼만 두고, 수정은 바텀시트(.sheet)에서 한다.
