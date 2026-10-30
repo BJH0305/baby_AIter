@@ -1,7 +1,8 @@
 // 베이비 AI터 — AI 답변 서버 함수 (Cloudflare Worker)
 // 역할: 웹페이지가 보낸 상담 정보 + 근거 카드로 프롬프트를 만들고, OpenAI를 호출해 답변(JSON)을 돌려준다.
 // API 키는 이 코드에 없다. Cloudflare 대시보드의 Secret(OPENAI_API_KEY)에만 넣는다.
-// 환경변수: OPENAI_API_KEY(Secret), OPENAI_MODEL(예: 목록에서 고른 mini 모델), ALLOW_ORIGIN(배포한 웹 주소, 미설정 시 *)
+// 환경변수: OPENAI_API_KEY(Secret), OPENAI_MODEL(빠른 답변, 예: gpt-4.1-mini), OPENAI_MODEL_DEEP(깊게 생각, 예: gpt-5.4-mini), ALLOW_ORIGIN(배포한 웹 주소, 미설정 시 *)
+// 웹에서는 mode: "fast" | "deep" 만 보낼 수 있다. 모델 이름은 서버가 정한다(임의 모델 사용 방지).
 
 const SYSTEM = [
   "너는 영유아 행동 지도 상담을 돕는 도우미다. 부모에게 해요체로 짧고 구체적으로 답한다.",
@@ -55,20 +56,24 @@ export default {
       이전기록: body.history || null
     }).slice(0, 8000);
 
+    // 빠른 답변(fast) / 깊게 생각(deep). deep 모델이 없으면 fast로 처리.
+    const deep = body.mode === "deep" && env.OPENAI_MODEL_DEEP;
+    const payload = {
+      model: deep ? env.OPENAI_MODEL_DEEP : env.OPENAI_MODEL,
+      response_format: { type: "json_object" },
+      max_completion_tokens: deep ? 4000 : 1500,
+      messages: [{ role: "system", content: SYSTEM }, { role: "user", content: user }]
+    };
+    if (deep) payload.reasoning_effort = "low";
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: { "Authorization": `Bearer ${env.OPENAI_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: env.OPENAI_MODEL,
-        response_format: { type: "json_object" },
-        max_completion_tokens: 1500,
-        messages: [{ role: "system", content: SYSTEM }, { role: "user", content: user }]
-      })
+      body: JSON.stringify(payload)
     });
     if (!res.ok) return reply(env, { error: "upstream", status: res.status }, 502);
     const data = await res.json();
     try {
-      return reply(env, { answer: JSON.parse(data.choices[0].message.content) });
+      return reply(env, { answer: JSON.parse(data.choices[0].message.content), mode: deep ? "deep" : "fast" });
     } catch {
       return reply(env, { error: "parse" }, 502);
     }
