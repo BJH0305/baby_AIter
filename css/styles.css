@@ -252,3 +252,13 @@ svg.lucide, [data-lucide] { width: 20px; height: 20px; stroke-width: 2; flex-shr
 .cause-tips { margin-top: var(--s3); }
 .cause-tips ul { padding-left: var(--s5); }
 .cause-tips li { margin-top: var(--s2); }
+
+/* 앱 높이는 고정하고 현재 화면의 내용 영역만 스크롤한다. */
+html, body { height: 100%; overflow: hidden; }
+body { padding: 0; }
+.app { height: 100dvh; min-height: 0; overflow: hidden; }
+.screen { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.topbar { position: relative; flex-shrink: 0; }
+.content { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.tabbar { position: relative; flex-shrink: 0; margin-top: auto; }
+@media (min-width: 600px) { .app { min-height: 0; height: 100dvh; } }
