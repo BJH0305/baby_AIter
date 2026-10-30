@@ -44,4 +44,4 @@ window.QUESTIONS = [
 ];
 
 // 기타 직접 입력은 원인 점수에 사용하지 않는다.
-window.QUESTIONS.forEach((question) => question.options.push({ value: "other", label: "기타(직접 입력)", scores: {} }));
+window.QUESTIONS.filter((question) => question.id !== "q-safety").forEach((question) => question.options.push({ value: "other", label: "기타(직접 입력)", scores: {} }));
