@@ -182,17 +182,18 @@ function optionIcon(questionId, value) {
   return byQuestion[questionId]?.[value] || "circle-help";
 }
 function inspectionRow(consult) {
-  return `<div class="card section inspection-card"><div class="inspection-meta"><span class="icon-badge">${icon(causeIcon(consult.answer.candidates[0]?.cardId))}</span><p class="muted">${esc(consult.createdAt)}</p></div><h3 class="title-md">${esc(inspectionTitle(consult))}</h3><p>결과가 맞았나요? ${esc(feedbackLabels[consult.feedbackResult] || "아직 답하지 않았어요")}</p><button class="btn btn-secondary btn-sm" type="button" data-consult="${esc(consult.id)}">결과 보기</button><button class="btn btn-ghost btn-sm" type="button" data-delete-record="${esc(consult.id)}">삭제</button></div>`;
+  return `<div class="card section inspection-card"><span class="icon-badge">${icon(causeIcon(consult.answer.candidates[0]?.cardId))}</span><div class="inspection-body"><div class="inspection-meta"><span>${esc(consult.createdAt)}</span><span class="badge">${esc(consult.input.target || "")}</span></div><h3 class="title-md">${esc(inspectionTitle(consult))}</h3><p class="muted">결과가 맞았나요? ${esc(feedbackLabels[consult.feedbackResult] || "아직 답하지 않았어요")}</p></div><div class="inspection-actions"><button class="btn btn-secondary btn-sm" type="button" data-consult="${esc(consult.id)}">결과 보기</button><button class="icon-btn" type="button" aria-label="기록 삭제" data-delete-record="${esc(consult.id)}">${icon("trash-2")}</button></div></div>`;
 }
 function renderHome() {
   const data = loadData();
   document.getElementById("profileSummary").textContent = `${data.profile.name} · ${data.profile.ageMonths}개월`;
-  const positions = [[50, 0], [93, 25], [93, 75], [50, 100], [7, 75], [7, 25]];
-  const orbitItems = orbitCauses.map(([key, label], index) => [causeIcons[key], label, ...positions[index]]);
-  const orbit = document.getElementById("homeOrbitNodes");
-  if (orbit) orbit.innerHTML = orbitItems.map(([name, label, x, y]) => `<div class="home-node" style="left:${x}%;top:${y}%"><span class="icon-badge"><i data-lucide="${name}"></i></span><span>${label}</span></div>`).join("");
+  // 장식의 원인 이름도 검수된 카드 제목을 사용한다.
+  for (const [element, id] of [["homeExpression", "cause-frustration"], ["homeCondition", "cause-condition"], ["homeChange", "cause-change"]]) {
+    const label = document.getElementById(element);
+    if (label) label.textContent = window.KNOWLEDGE.find((card) => card.id === id)?.title || "";
+  }
   const recent = getInspections(data).slice(0, 3);
-  document.getElementById("homeRecent").innerHTML = recent.length ? recent.map(inspectionRow).join("") : '<div class="empty"><p>아직 검사 기록이 없어요</p><p>질문에 답하고 원인 후보를 살펴보세요.</p></div>';
+  document.getElementById("homeRecent").innerHTML = recent.length ? recent.map(inspectionRow).join("") : '<div class="empty card"><p>아직 검사 기록이 없어요</p><p>질문에 답하고 원인 후보를 살펴보세요.</p></div>';
 }
 function renderLog() {
   const inspections = getInspections();
@@ -205,21 +206,25 @@ function displayTip(text, input) {
   if (target === "sibling") return text.replace(/친구가/g, "동생이").replace(/친구를/g, "동생을").replace(/친구는/g, "동생은").replace(/친구와/g, "동생과").replace(/친구/g, "동생");
   return text.replace(/친구(?:에게|한테|의|가|를|와|는|도)?\s*/g, "").replace(/ {2,}/g, " ").trim();
 }
-// 첫 화면에는 요약만 표시하고, 선택 답변·AI 설명·원문 근거는 접어 둔다.
+// 검수 카드·저장된 답변·AI 응답만 결과에 사용한다. 시안 예시 데이터는 사용하지 않는다.
 function renderCauseResult(container, consult) {
   const answer = applySafety(consult.answer, consult.input);
-  const safety = answer.level === "red" ? '<div class="section card safety-alert" role="alert"><h2 class="title-md"><span class="icon-badge"><i data-lucide="triangle-alert" aria-hidden="true"></i></span>전문가 상담 권장</h2><p>먼저 물린 사람의 안전과 상처를 확인해 주세요. 육아종합지원센터 또는 소아청소년과에 상담해 보세요.</p></div>' : "";
+  const safety = answer.level === "red" ? `<div class="section card safety-alert" role="alert"><span class="icon-badge">${icon("triangle-alert")}</span><div><h2 class="title-md">전문가 상담 권장</h2><p>먼저 물린 사람의 안전과 상처를 확인해 주세요. 육아종합지원센터 또는 소아청소년과에 상담해 보세요.</p></div></div>` : "";
   const targetSummary = {peer: "친구를 깨물었을 때", sibling: "형제자매를 깨물었을 때", adult: "보호자·어른을 깨물었을 때"}[consult.input.answers?.["q-target"]] || "깨물기 상황";
-  const inputSummary = `${consult.input.ageMonths}개월 · ${targetSummary}`;
-  container.innerHTML = `${safety}<p class="section muted">${esc(inputSummary)}</p><div class="section result-heading"><h1 class="result-title">원인 후보</h1><p>가능성이 높은 원인 후보예요. 진단이 아니에요.</p><p class="muted result-note">원인은 여러 개가 함께 있을 수 있어요. 위에 있다고 더 확실한 건 아니에요.</p><span class="badge">${consult.source === "ai" ? "AI 설명" : "기본 설명"}</span></div>` + (answer.candidates.length ? answer.candidates.map((candidate, index) => {
+  const candidates = answer.candidates.map((candidate, index) => {
     const card = window.KNOWLEDGE.find((c) => c.id === candidate.cardId);
     if (!card) return "";
     const selected = scoreCauses(consult.input).find((c) => c.cardId === card.id)?.reasons.join(" / ") || "[확인 필요]";
-    // AI가 쓴 이유를 먼저 보여 주고, 없는 경우 카드의 전체 설명을 사용한다.
     const hasAI = consult.source === "ai" && typeof candidate.why === "string" && candidate.why.trim().length > 0;
     const explanation = hasAI ? candidate.why : card.explain;
-    return `<article class="section card cause-card" style="--card-index:${index}"><h2 class="title-md cause-heading"><span class="icon-badge">${icon(causeIcon(card.id))}</span>${esc(card.title)}</h2>${hasAI ? '<p class="label reason-label"><i data-lucide="sparkles" aria-hidden="true"></i>우리 아이 답변으로 본 이유</p>' : ""}<p class="cause-summary">${esc(explanation)}</p><div class="cause-tips"><b class="tip-heading">${icon("heart")}이럴 땐 이렇게</b><ul>${card.tips.map((tip) => `<li>${icon("check")}<span>${esc(displayTip(tip.text, consult.input))}</span></li>`).join("")}</ul></div><details><summary><span>${icon("book-open")}근거 보기</span></summary><div class="evidence-body">${hasAI ? `<p>${esc(card.explain)}</p>` : ""}<p>선택한 답변: ${esc(selected)}</p><p class="muted source-text">${icon("book-open")}<span>${esc(displaySource(card))}</span></p>${sourceLink(card)}<blockquote>${esc(card.evidence)}</blockquote>${card.verified === false ? '<span class="badge">검수 중</span>' : ""}</div></details></article>`;
-  }).join("") : '<div class="section empty"><p>답변만으로 원인 후보를 좁히기 어려워요.</p><p>관찰 내용을 확인하고 다시 답해 주세요.</p></div>') + `<div class="section card"><h2 class="title-md">결과가 맞았나요?</h2><div class="chips" role="group" aria-label="결과 피드백">${Object.entries(feedbackLabels).map(([value, label]) => `<button type="button" class="chip ${consult.feedbackResult === value ? "on" : ""}" aria-pressed="${consult.feedbackResult === value}" data-cause-feedback="${value}" data-inspection="${esc(consult.id)}">${label}</button>`).join("")}</div></div><a class="btn btn-secondary btn-block" href="#ask">답변 다시 살펴보기</a><a class="btn btn-ghost btn-block" href="#log">검사 기록 보기</a>`;
+    return `<article class="card cause-card" data-cause="${esc(card.id)}" style="--card-index:${index}"><div class="cause-heading"><span class="icon-badge">${icon(causeIcon(card.id))}</span><div><span class="muted candidate-label">원인 후보 ${index + 1}</span><h2 class="title-md">${esc(card.title)}</h2></div></div><div class="cause-reason">${hasAI ? `<p class="label reason-label">${icon("sparkles")}우리 아이 답변으로 본 이유</p>` : ""}<p class="cause-summary">${esc(explanation)}</p></div><div class="cause-tips"><b class="tip-heading">${icon("heart")}이럴 땐 이렇게</b><ul>${card.tips.map((tip, tipIndex) => `<li><span class="tip-number">${tipIndex + 1}</span><span>${esc(displayTip(tip.text, consult.input))}</span></li>`).join("")}</ul></div><details><summary><span>${icon("book-open")}근거 보기</span>${icon("chevron-down")}</summary><div class="evidence-body">${hasAI ? `<p>${esc(card.explain)}</p>` : ""}<p class="label">출처 자료</p><p class="source-text">${esc(displaySource(card))}</p>${sourceLink(card)}<p class="label">원문 발췌</p><blockquote>${esc(card.evidence)}</blockquote><p>선택한 답변: ${esc(selected)}</p>${card.verified === false ? '<span class="badge">검수 중</span>' : ""}</div></details></article>`;
+  }).join("");
+  const answers = window.QUESTIONS.map((question, index) => {
+    const value = consult.input.answers?.[question.id];
+    const label = value === "other" ? `기타: ${consult.input.otherAnswers?.[question.id] || ""}` : question.options.find((option) => option.value === value)?.label || "선택하지 않았어요";
+    return `<div class="answer-row"><p>Q${index + 1}. ${esc(question.title)}</p><b>${esc(label)}</b></div>`;
+  }).join("");
+  container.innerHTML = `${safety}<header class="result-heading"><div class="result-meta"><span class="badge accent">${esc(consult.input.ageMonths)}개월 · ${esc(targetSummary)}</span><span class="badge">${icon("sparkles")}${consult.source === "ai" ? "AI 설명" : "기본 설명"}</span></div><h1 class="result-title">원인 후보</h1><p>가능성이 높은 원인 후보예요. 진단이 아니에요.</p><p class="muted result-note">원인은 여러 개가 함께 있을 수 있어요. 위에 있다고 더 확실한 건 아니에요.</p></header><div class="result-layout"><div class="cause-list">${candidates || '<div class="card empty"><p>답변만으로 원인 후보를 좁히기 어려워요.</p><p>관찰 내용을 확인하고 다시 답해 주세요.</p></div>'}</div><aside class="result-aside"><details class="card answers-summary" ${window.matchMedia?.("(min-width: 768px)")?.matches ? "open" : ""}><summary><span>내가 답한 내용 요약</span>${icon("chevron-down")}</summary><div class="answers-body">${answers}${consult.input.text ? `<div class="answer-row"><p>추가 메모</p><b>${esc(consult.input.text)}</b></div>` : ""}</div><a class="btn btn-secondary btn-block" href="#ask">답변 다시 살펴보기</a></details><div class="card feedback-card"><h2 class="title-md">결과가 맞았나요?</h2><div class="chips" role="group" aria-label="결과 피드백">${Object.entries(feedbackLabels).map(([value, label]) => `<button type="button" class="chip ${consult.feedbackResult === value ? "on" : ""}" aria-pressed="${consult.feedbackResult === value}" data-cause-feedback="${value}" data-inspection="${esc(consult.id)}">${label}</button>`).join("")}</div></div><a class="btn btn-primary btn-block" href="#log">${icon("clock")}검사 기록 보기</a></aside></div>`;
 }
 // 한 탭으로 검사별 피드백을 갱신한다. 이전 지도법 피드백과 섞지 않는다.
 document.addEventListener("click", (event) => {
@@ -280,7 +285,7 @@ document.addEventListener("click", (event) => {
 
 document.getElementById("editProfile")?.addEventListener("click", () => {
   const profile = loadData().profile;
-  openSheet(`<h2 class="title-md">아이 프로필 수정</h2><form id="profileForm"><div class="field"><label class="label" for="profileName">가명</label><input class="input" id="profileName" required maxlength="30" value="${esc(profile.name)}" /></div><div class="field"><label class="label" for="profileAge">개월 수</label><input class="input" id="profileAge" type="number" min="0" step="1" required value="${esc(profile.ageMonths)}" /></div><button class="btn btn-primary btn-block" type="submit">저장</button><button type="button" class="btn btn-ghost btn-block" data-clear-records>전체 기록 초기화</button></form>`);
+  openSheet(`<h2 class="title-md">아이 프로필 수정</h2><form id="profileForm"><div class="field"><label class="label" for="profileName">가명</label><input class="input" id="profileName" required maxlength="30" value="${esc(profile.name)}" /></div><div class="field"><label class="label" for="profileAge">개월 수</label><input class="input" id="profileAge" type="number" min="12" max="59" step="1" required value="${esc(profile.ageMonths)}" /></div><button class="btn btn-primary btn-block" type="submit">저장</button><button type="button" class="btn btn-ghost btn-block" data-clear-records>전체 기록 초기화</button></form>`);
 });
 document.getElementById("sheetBody")?.addEventListener("submit", (event) => {
   if (event.target.id !== "profileForm") return;
@@ -289,6 +294,7 @@ document.getElementById("sheetBody")?.addEventListener("submit", (event) => {
   data.profile.name = document.getElementById("profileName").value.trim();
   data.profile.ageMonths = Number(document.getElementById("profileAge").value);
   if (!data.profile.name) return;
+  if (!Number.isInteger(data.profile.ageMonths) || data.profile.ageMonths < 12 || data.profile.ageMonths > 59) { toast("개월 수는 12~59개월 사이로 입력해 주세요"); return; }
   if (saveData(data)) { closeSheet(); renderHome(); refreshIcons(); toast("프로필을 저장했어요"); }
   else toast("저장하지 못했어요");
 });

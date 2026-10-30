@@ -5,25 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>베이비 AI터</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <meta name="theme-color" content="#f1f5f0" />
+  <meta name="theme-color" content="#FAF6F0" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" />
-  <link rel="stylesheet" href="css/styles.css?v=design-D5" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" />
+  <link rel="stylesheet" href="css/styles.css?v=feedback-FD1" />
   <script defer src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
 </head>
 <body>
-  <header class="desktop-nav"><a class="brand" href="#home" data-reset-demo><span class="brand-mark"><i data-lucide="heart"></i></span>베이비 AI터</a><nav aria-label="상단 메뉴"><a href="#home" data-desktop-tab="home"><i data-lucide="house"></i>홈</a><a href="#ask" data-desktop-tab="ask"><i data-lucide="clipboard-list"></i>질문 검사</a><a href="#log" data-desktop-tab="log"><i data-lucide="clock"></i>기록</a></nav><button class="btn btn-primary" data-start-quiz>검사 시작하기 <i data-lucide="arrow-right"></i></button></header>
+  <header class="app-header"><div class="header-inner"><div class="header-left"><a class="brand" href="#home" data-reset-demo>베이비 AI터</a><nav aria-label="상단 메뉴"><a href="#home" data-desktop-tab="home">홈</a><a href="#ask" data-desktop-tab="ask">질문 검사</a><a href="#log" data-desktop-tab="log">기록</a></nav></div><button class="profile-button" id="editProfile" type="button" aria-label="아이 정보 수정"><span id="profileSummary"></span><i data-lucide="pencil"></i></button></div></header>
   <div class="app">
     <section class="screen" data-screen="home">
       <header class="topbar"><h1 data-reset-demo>베이비 AI터</h1></header>
       <main class="content">
-        <div class="home-hero">
-          <div class="hero-copy"><span class="eyebrow"><i data-lucide="book-open"></i>공공기관 자료 기반</span><h2>아이가 깨물었을 때,<br><strong>왜 그랬는지</strong> 먼저.</h2><p class="hero-lead">질문 8개에 답하면 공공기관 자료에 근거한 원인 후보와 대응 방법을 한 번에 보여 드려요.</p><p class="muted target-prompt">누구를 깨물었나요?</p><div class="chips home-targets"><button type="button" class="chip" data-start-quiz data-prefill-target="peer"><i data-lucide="users"></i>친구</button><button type="button" class="chip" data-start-quiz data-prefill-target="sibling"><i data-lucide="baby"></i>동생</button><button type="button" class="chip" data-start-quiz data-prefill-target="unknown"><i data-lucide="circle-help"></i>잘 모르겠어요</button></div><div class="hero-actions"><button class="btn btn-primary" type="button" data-start-quiz>검사 시작하기 <i data-lucide="arrow-right"></i></button><a class="btn btn-secondary" href="#log">지난 기록</a></div></div>
-          <div class="home-orbit" aria-label="아이 정보와 원인 유형"><div class="orbit-ring"></div><div class="orbit-ring inner"></div><div class="home-core"><span class="muted">우리 아이</span><b id="profileSummary"></b><button class="btn btn-ghost btn-sm" id="editProfile" type="button">아이 정보 수정</button></div><div id="homeOrbitNodes"></div></div>
-        </div>
-        <div class="home-steps"><article class="card step-card"><span class="icon-badge"><i data-lucide="clipboard-list"></i></span><div><h3>상황 답하기</h3><p class="muted">대상·직전 상황·컨디션 8문항</p></div></article><article class="card step-card"><span class="icon-badge"><i data-lucide="search"></i></span><div><h3>원인 후보 확인</h3><p class="muted">우리 아이 답변으로 본 이유</p></div></article><article class="card step-card"><span class="icon-badge"><i data-lucide="book-open"></i></span><div><h3>근거·대응 보기</h3><p class="muted">기관 자료·쪽수와 대응 2~3줄</p></div></article></div>
-        <div class="section home-records"><div class="section-head"><h2 class="title-md">최근 검사</h2><a href="#log">전체 기록 보기 <span aria-hidden="true">→</span></a></div><div class="recent-grid" id="homeRecent"></div></div>
+        <div class="home-hero"><div class="hero-copy"><h2>아이가 깨물었을 때,<br><span class="highlight">왜 그랬는지 먼저.</span></h2><p class="hero-lead">질문 8개에 답하면 공공기관 자료에 근거한 원인 후보와 대응 방법을 한 번에 보여 드려요.</p><button class="btn btn-primary" type="button" data-start-quiz>검사 시작하기 <i data-lucide="arrow-right"></i></button><p class="hero-notes">· 공공기관 자료 근거 <span>· 진단이 아닌 안내</span><span>· 기록은 이 기기에만 저장</span></p></div><div class="playful-art" aria-hidden="true"><div class="baby-shape"><i data-lucide="baby"></i></div><div class="play-shape expression"><div><i data-lucide="message-circle"></i></div><span id="homeExpression"></span></div><div class="play-shape fatigue"><span id="homeCondition"></span><div><i data-lucide="moon"></i></div></div><div class="play-shape environment"><div><i data-lucide="house"></i></div><span id="homeChange"></span></div></div></div>
+        <section class="home-records"><div class="section-head"><h2 class="title-md"><i data-lucide="clock"></i>최근 검사</h2><a href="#log">전체 기록 보기 →</a></div><div id="homeRecent" class="recent-list"></div></section>
         <p class="home-disclaimer muted"><i data-lucide="info"></i>진단이 아닌 이해를 돕는 안내예요.</p>
       </main>
     </section>
@@ -57,10 +53,10 @@
   <div class="sheet-backdrop" id="sheetBackdrop"></div>
   <div class="sheet" id="sheet"><div id="sheetBody"></div><button class="btn btn-ghost btn-block" id="sheetClose">닫기</button></div>
   <div class="toast" id="toast"></div>
-  <script defer src="js/knowledge.js?v=design-D5"></script>
-  <script defer src="js/config.js?v=design-D5"></script>
-  <script defer src="js/questions.js?v=design-D5"></script>
-  <script defer src="js/ai.js?v=design-D5"></script>
-  <script defer src="js/app.js?v=design-D5"></script>
+  <script defer src="js/knowledge.js?v=feedback-FD1"></script>
+  <script defer src="js/config.js?v=feedback-FD1"></script>
+  <script defer src="js/questions.js?v=feedback-FD1"></script>
+  <script defer src="js/ai.js?v=feedback-FD1"></script>
+  <script defer src="js/app.js?v=feedback-FD1"></script>
 </body>
 </html>

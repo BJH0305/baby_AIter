@@ -134,3 +134,5 @@
 - D5 실제 배포 검수 진행: PC 1280px·폰 375px, 안전 예/아니오·기타 빈칸 차단·동생 미리 선택·AI 설명·근거 표시 확인. 간격·전환 스크롤 보정, 콘솔·삭제 확정 추가 확인 중.
 
 - D5 확인 보류: 최종 보정 push 후에도 Netlify 공개 HTML은 `feedback-D4` 반환. `design-D5` 반영 후 여백·스크롤·defer 재검수 필요. 외부 배지가 폰 탭을 덮고 초기 MutationObserver 오류가 간헐 관찰됨. 실제 삭제 확정은 자동 승인 검토가 기존 기록 손실 우려로 거부해 실행하지 않았습니다. TASKS.md D5 질문 참조.
+
+- FD1 완료: 최종 도형 홈·웜 옐로우 토큰·결과 원인/답변 요약 배치 — reference_preview Pages 브라우저 확인. React·시안 가짜 카드/기록/기본 답변/테스트 도구 제외. knowledge·questions·ai·Worker 미수정. 프로필 12~59 검증 반영
