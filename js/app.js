@@ -23,6 +23,12 @@ const store = {
   },
 };
 let items = store.load();
+// 상담 화면에서 결과 화면으로 넘길 임시 데이터.
+let pendingConsult = null;
+function getProfile() {
+  try { return JSON.parse(localStorage.getItem("babyaiter-v1"))?.profile || { name: "도윤", ageMonths: 38, hasSibling: true }; }
+  catch { return { name: "도윤", ageMonths: 38, hasSibling: true }; }
+}
 
 // ---------- 화면 전환 ----------
 function showScreen(name) {
@@ -90,6 +96,8 @@ function itemRow(it) {
 
 let filter = "all";
 function render() {
+  const age = document.getElementById("askAge");
+  if (age) age.textContent = `아이 개월 수: ${getProfile().ageMonths}개월`;
   const recent = document.getElementById("recentList");
   if (recent) recent.innerHTML = items.slice(0, 3).map(itemRow).join("");
 
@@ -161,6 +169,37 @@ document.getElementById("newForm")?.addEventListener("submit", (e) => {
   e.target.reset();
   location.hash = "#home";
   toast("저장했어요");
+});
+
+// 상담 조건을 선택하고 mock 분석이 끝나면 결과 화면으로 이동한다.
+for (const id of ["targetChips", "situationChips"]) {
+  document.getElementById(id)?.addEventListener("click", (event) => {
+    const chip = event.target.closest(".chip");
+    if (!chip) return;
+    document.querySelectorAll(`#${id} .chip`).forEach((item) => item.classList.toggle("on", item === chip));
+  });
+}
+document.getElementById("askForm")?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const loading = document.getElementById("askLoading");
+  const input = {
+    target: document.querySelector("#targetChips .on").dataset.value,
+    situation: document.querySelector("#situationChips .on").dataset.value,
+    text: document.getElementById("askText").value.trim(),
+    ageMonths: getProfile().ageMonths
+  };
+  form.hidden = true;
+  loading.hidden = false;
+  try {
+    pendingConsult = { input, answer: await askAI(input) };
+    location.hash = "#result";
+  } catch {
+    toast("분석하지 못했어요. 다시 시도해 주세요");
+  } finally {
+    form.hidden = false;
+    loading.hidden = true;
+  }
 });
 
 showScreen(location.hash.slice(1) || "home");
