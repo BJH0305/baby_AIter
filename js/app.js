@@ -242,7 +242,6 @@ document.addEventListener("click", (event) => {
     for (const id of Object.keys(quizAnswers)) delete quizAnswers[id];
     for (const id of Object.keys(quizOtherAnswers)) delete quizOtherAnswers[id];
     document.getElementById("askText").value = "";
-    if (startButton.dataset.prefillTarget) quizAnswers["q-target"] = startButton.dataset.prefillTarget;
     renderQuiz(); location.hash = "#ask";
   }
 });
@@ -318,7 +317,7 @@ document.getElementById("askForm")?.addEventListener("submit", async (event) => 
     const data = loadData();
     const id = `c_${Date.now()}`;
     const cardIds = result._meta.cards.map((card) => card.id);
-    data.consults.unshift({ id, createdAt: new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" }).format(new Date()), round: 1, parentId: null, input, cardIds, answer: pendingConsult.answer, source: result._meta.source, mode: result._meta.mode, tried: [] });
+    data.consults.unshift({ id, createdAt: new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Seoul" }).format(new Date()), round: 1, parentId: null, input, cardIds, answer: pendingConsult.answer, source: result._meta.source, mode: result._meta.mode, feedbackResult: null, tried: [] });
     if (!saveData(data)) throw new Error("저장 실패");
     currentConsultId = id;
     analysisState = null;
@@ -350,8 +349,8 @@ function getQuizInput() {
 }
 function renderQuiz() {
   const questions = window.QUESTIONS, question = questions[quizIndex], done = !question;
-  document.getElementById("questionContent").innerHTML = `<p class="section">${done ? questions.length : quizIndex + 1} / ${questions.length}</p><div class="progress" role="progressbar" aria-label="질문 진행" aria-valuemin="0" aria-valuemax="${questions.length}" aria-valuenow="${quizIndex}"><i style="width:calc(100% * ${quizIndex} / ${questions.length})"></i></div>` + (done ? '<h2 class="title-md section">질문에 모두 답했어요</h2><p>특별한 상황이 있으면 적어 주세요.</p>' : `<h2 class="title-md section" id="questionTitle">${esc(question.title)}</h2>${question.help ? `<p class="muted section">${esc(question.help)}</p>` : ""}<div role="group" aria-labelledby="questionTitle">${question.options.map((o) => `<div class="field"><button type="button" class="btn question-option ${quizAnswers[question.id] === o.value ? "btn-primary" : "btn-secondary"} btn-block" data-answer="${o.value}" aria-pressed="${quizAnswers[question.id] === o.value}"><span class="option-icon">${icon(optionIcon(question.id, o.value))}</span><span>${esc(o.label)}</span></button></div>`).join("")}</div>`);
-  if (!done && quizAnswers[question.id] === "other") document.getElementById("questionContent").innerHTML += `<div class="field"><label class="label" for="quizOther">기타 직접 입력</label><input class="input" id="quizOther" maxlength="40" value="${esc(quizOtherAnswers[question.id] || "")}" placeholder="직접 입력해 주세요" /></div>`;
+  const selected = question ? quizAnswers[question.id] : null;
+  document.getElementById("questionContent").innerHTML = `<p class="section"><span class="question-count">${done ? questions.length : quizIndex + 1} / ${questions.length}</span></p><div class="progress" role="progressbar" aria-label="질문 진행" aria-valuemin="0" aria-valuemax="${questions.length}" aria-valuenow="${quizIndex}"><i style="width:calc(100% * ${quizIndex} / ${questions.length})"></i></div>` + (done ? '<h2 class="title-md section">질문에 모두 답했어요</h2><p>특별한 상황이 있으면 적어 주세요.</p>' : `<h2 class="title-md section" id="questionTitle">${esc(question.title)}</h2>${question.help ? `<p class="muted section">${esc(question.help)}</p>` : ""}<div class="option-list ${selected ? "has-selection" : ""}" id="quizOptions" role="group" aria-labelledby="questionTitle">${question.options.map((option) => `<div class="field"><button type="button" class="btn question-option ${selected === option.value ? "btn-primary is-selected" : "btn-secondary"} btn-block" data-answer="${option.value}" aria-pressed="${selected === option.value}"><span class="option-icon">${icon(optionIcon(question.id, option.value))}</span><span class="option-label">${esc(option.label)}</span><span class="option-check">${icon("check")}</span></button></div>`).join("")}</div>${question.options.some((option) => option.value === "other") ? `<div class="field" id="quizOtherField" ${selected === "other" ? "" : "hidden"}><label class="label" for="quizOther">기타 직접 입력</label><input class="input" id="quizOther" maxlength="40" value="${esc(quizOtherAnswers[question.id] || "")}" placeholder="직접 입력해 주세요" /></div>` : ""}`);
   document.getElementById("quizBack").hidden = quizIndex === 0;
   document.getElementById("quizNext").hidden = done;
   document.getElementById("quizNext").disabled = !done && !isQuizAnswered(question);
@@ -359,12 +358,30 @@ function renderQuiz() {
   document.getElementById("quizNote").hidden = !done;
   refreshIcons();
 }
-document.getElementById("questionContent").addEventListener("click", (e) => {
-  const option = e.target.closest("[data-answer]");
-  if (!option) return;
-  quizAnswers[window.QUESTIONS[quizIndex].id] = option.dataset.answer;
-  renderQuiz();
+// 버튼을 다시 만들지 않고 선택 상태를 갱신하여 전환 효과와 키보드 초점을 유지한다.
+function syncQuizSelection() {
+  const question = window.QUESTIONS[quizIndex];
+  if (!question) return;
+  const selected = quizAnswers[question.id], group = document.getElementById("quizOptions");
+  group.classList.toggle("has-selection", Boolean(selected));
+  group.querySelectorAll("[data-answer]").forEach((button) => {
+    const active = button.dataset.answer === selected;
+    button.classList.toggle("is-selected", active);
+    button.classList.toggle("btn-primary", active);
+    button.classList.toggle("btn-secondary", !active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+  const other = document.getElementById("quizOtherField");
+  if (other) other.hidden = selected !== "other";
+  document.getElementById("quizNext").disabled = !isQuizAnswered(question);
+}
+document.getElementById("questionContent").addEventListener("click", (event) => {
+  const option = event.target.closest("[data-answer]"), question = window.QUESTIONS[quizIndex];
+  if (!option || !question?.options.some((item) => item.value === option.dataset.answer)) return;
+  quizAnswers[question.id] = option.dataset.answer;
+  syncQuizSelection();
 });
+
 document.getElementById("questionContent").addEventListener("input", (event) => {
   if (event.target.id !== "quizOther") return;
   quizOtherAnswers[window.QUESTIONS[quizIndex].id] = event.target.value;
