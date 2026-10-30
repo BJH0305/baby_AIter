@@ -21,6 +21,7 @@
   input: { target: "동생", situation: "동생을 안고 있을 때", text: "...", ageMonths: 38 },
   cardIds: ["bite-sibling", "bite-basic"],
   answer: Answer,
+  source: "ai" | "rule",          // 답변 생성 방식
   tried: ["m1", "m3"]             // "해 볼게요" 누른 methods id
 }
 ```
@@ -44,6 +45,7 @@
 ```
 
 ## 5. askAI(input, history)
+- 반환값은 Answer이며, 저장하지 않는 `_meta`에 source, cards, fallback이 담긴다.
 - history 형식 (첫 상담이면 `null`):
 ```js
 { previous: { input, methods: [ {id, title} ] },

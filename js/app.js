@@ -163,13 +163,14 @@ async function reconsult(button) {
   const history = { previous: { input: previous.input, methods: previous.answer.methods.map(({ id, title }) => ({ id, title })) }, feedback };
   button.disabled = true;
   try {
-    const answer = applySafety(await askAI(previous.input, history), previous.input, feedback);
+    const result = await askAI(previous.input, history);
+    const answer = applySafety(result, previous.input, feedback);
     const id = `c_${Date.now()}`;
-    data.consults.unshift({ id, createdAt: new Date().toISOString().slice(0, 10), round: 2, parentId: previous.id, input: previous.input, cardIds: getConsultCards(previous.input).map((card) => card.id), answer, tried: [] });
+    data.consults.unshift({ id, createdAt: new Date().toISOString().slice(0, 10), round: 2, parentId: previous.id, input: previous.input, cardIds: result._meta.cards.map((card) => card.id), answer, source: result._meta.source, tried: [] });
     if (!saveData(data)) throw new Error("저장 실패");
     currentConsultId = id;
     location.hash = "#result";
-    toast("다시 상담한 결과를 저장했어요");
+    toast(result._meta.fallback ? "AI 연결이 느려 기본 답변을 보여 드려요" : "다시 상담한 결과를 저장했어요");
   } catch { toast("다시 상담하지 못했어요"); }
   finally { button.disabled = false; }
 }
@@ -209,7 +210,7 @@ function renderResult() {
   const findMethod = (id) => answer.methods.find((method) => method.id === id)?.title || previous?.answer.methods.find((method) => method.id === id)?.title || id;
   const changes = answer.changes ? `<div class="section card"><h2 class="title-md">지난번과 달라진 점</h2>${answer.changes.kept.map((id) => `<p>유지: ${esc(findMethod(id))}</p>`).join("")}${answer.changes.replaced.map((item) => `<p>교체: ${esc(findMethod(item.from))} → ${esc(findMethod(item.to))}</p>`).join("")}</div>` : "";
   const safety = answer.level === "red" ? '<div class="section card"><h2 class="title-md">전문가 상담 권장</h2><p>육아종합지원센터 또는 소아청소년과에 상담해 보세요.</p></div>' : "";
-  container.innerHTML = `${safety}${changes}<div class="section"><span class="badge">${esc(labels[answer.level] || labels.green)}</span></div>
+  container.innerHTML = `${safety}${changes}<div class="section"><span class="badge">${consult.source === "ai" ? "AI 답변" : "기본 답변"}</span> <span class="badge">${esc(labels[answer.level] || labels.green)}</span></div>
     <div class="section card"><h2 class="title-md">원인 해석</h2>${answer.causes.map((cause) => `<p>${esc(cause)}</p>`).join("")}</div>
     <div class="section"><h2 class="title-md">지도법</h2>${answer.methods.map((method) => `<div class="card"><h3 class="title-md">${esc(method.title)}</h3>${method.how !== method.title ? `<p>${esc(method.how)}</p>` : ""}<p class="muted">왜: ${esc(method.why)}</p><p class="muted">근거: ${esc(window.KNOWLEDGE.find((card) => card.id === method.cardId)?.title || method.cardId)}</p><button class="btn btn-secondary" data-try="${esc(method.id)}" ${consult.tried.includes(method.id) ? "disabled" : ""}>${consult.tried.includes(method.id) ? "선택했어요" : "해 볼게요"}</button></div>`).join("")}</div>
     <div class="section"><h2 class="title-md">근거 자료</h2>${cards.map((card) => `<div class="card"><h3 class="title-md">${esc(card.title)}</h3>${card.evidence ? `<blockquote>${esc(card.evidence)}</blockquote>` : ""}<p class="muted">${esc(card.source)} ${card.verified === false ? '<span class="badge">검수 중</span>' : ""}</p></div>`).join("")}</div>`;
@@ -280,15 +281,16 @@ document.getElementById("askForm")?.addEventListener("submit", async (event) => 
   form.hidden = true;
   loading.hidden = false;
   try {
-    pendingConsult = { input, answer: applySafety(await askAI(input), input) };
+    const result = await askAI(input);
+    pendingConsult = { input, answer: applySafety(result, input) };
     const data = loadData();
     const id = `c_${Date.now()}`;
-    const cardIds = getConsultCards(input).map((card) => card.id);
-    data.consults.unshift({ id, createdAt: new Date().toISOString().slice(0, 10), round: 1, parentId: null, input, cardIds, answer: pendingConsult.answer, tried: [] });
+    const cardIds = result._meta.cards.map((card) => card.id);
+    data.consults.unshift({ id, createdAt: new Date().toISOString().slice(0, 10), round: 1, parentId: null, input, cardIds, answer: pendingConsult.answer, source: result._meta.source, tried: [] });
     if (!saveData(data)) throw new Error("저장 실패");
     currentConsultId = id;
     location.hash = "#result";
-    toast("상담 결과를 저장했어요");
+    toast(result._meta.fallback ? "AI 연결이 느려 기본 답변을 보여 드려요" : "상담 결과를 저장했어요");
   } catch {
     toast("분석하지 못했어요. 다시 시도해 주세요");
   } finally {

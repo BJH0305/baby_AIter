@@ -19,8 +19,6 @@ function searchCards({ target = "", situation = "", text = "", ageMonths } = {})
     .map((entry) => entry.card);
 }
 
-const AI_MODE = "mock";
-
 // 상담 정보와 선택된 근거, 피드백을 안전한 답변 지시문으로 묶는다.
 function buildPrompt(input, cards, history) {
   return [
@@ -37,9 +35,47 @@ function getConsultCards(input) {
   const cards = searchCards(input);
   return cards.length ? cards : window.KNOWLEDGE.filter((card) => card.id === "bite-basic");
 }
-// 검색된 근거로 규칙 기반 답변을 만든다.
+// 서버 답변의 지도법이 보낸 카드에 속하는지 검사한다.
+function isValidAnswer(answer, cards) {
+  if (!answer || !Array.isArray(answer.methods) || answer.methods.length !== 3 ||
+      !Array.isArray(answer.causes) || !answer.causes.every((cause) => typeof cause === "string") ||
+      !["green", "yellow"].includes(answer.level) || typeof answer.note !== "string") return false;
+  const ids = new Set();
+  for (const method of answer.methods) {
+    const card = cards.find((item) => item.id === method?.cardId);
+    if (!card || typeof method.id !== "string" || !method.id.startsWith(`${card.id}-`)) return false;
+    const suffix = method.id.slice(card.id.length + 1);
+    if (!/^(0|[1-9]\d*)$/.test(suffix) || !card.methods[Number(suffix)] ||
+        method.title !== card.methods[Number(suffix)] || typeof method.how !== "string" || typeof method.why !== "string" || ids.has(method.id)) return false;
+    ids.add(method.id);
+  }
+  if (answer.changes != null && (!Array.isArray(answer.changes.kept) || !answer.changes.kept.every((id) => typeof id === "string") || !Array.isArray(answer.changes.replaced) || !answer.changes.replaced.every((item) => typeof item?.from === "string" && typeof item?.to === "string") || typeof answer.changes.summary !== "string")) return false;
+  return true;
+}
+
+// 서버가 실패하거나 지연되면 동일한 카드로 기본 답변을 만든다.
 async function askAI(input, history = null) {
   const cards = getConsultCards(input);
-  return new Promise((resolve) => setTimeout(() => resolve(ruleAnswer(input, cards, history)), 1000));
+  const config = window.APP_CONFIG || {};
+  const useLive = config.AI_MODE === "live";
+  if (useLive && config.API_URL) {
+    const controller = new AbortController();
+    let timer;
+    try {
+      const timeout = new Promise((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(new Error("timeout")); }, 12000); });
+      const request = fetch(config.API_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ input, cards: cards.map(({ id, title, causes, methods }) => ({ id, title, causes, methods })), history }), signal: controller.signal }).then(async (response) => {
+        if (!response.ok) throw new Error("request failed");
+        return response.json();
+      });
+      const result = await Promise.race([request, timeout]);
+      if (!isValidAnswer(result.answer, cards)) throw new Error("invalid answer");
+      Object.defineProperty(result.answer, "_meta", { value: { source: "ai", cards, fallback: false } });
+      return result.answer;
+    } catch {} finally { clearTimeout(timer); }
+  }
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  const answer = ruleAnswer(input, cards, history);
+  Object.defineProperty(answer, "_meta", { value: { source: "rule", cards, fallback: useLive } });
+  return answer;
 }
 

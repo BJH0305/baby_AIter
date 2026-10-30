@@ -31,7 +31,8 @@
 ## 실제 AI 연결
 - [x] T11. 🛑 사람 확인: 대회에서 받은 API 종류(OpenAI/Gemini 등)와 사용 방식 확인.
   - 메모(Claude): OpenAI 프로젝트 키(sk-proj) 확인, 운영진 사용 허락 받음. 서버 함수 `api/worker.js`는 Claude가 작성 완료. 키는 Cloudflare Secret에만 넣는다(배준희가 직접).
-- [ ] T12. live 모드 프론트 연결 (서버 함수 `api/worker.js`는 이미 있음 — 수정하지 말 것):
+- [x] T12. live 모드 프론트 연결 (서버 함수 `api/worker.js`는 이미 있음 — 수정하지 말 것):
+  - 메모: js/config.js, js/ai.js, js/app.js, index.html, docs/DATA.md / mock과 가짜 live 응답 및 오류 대체 확인 / live 요청·검증·실패 대체 및 답변 출처 표시
   - `js/config.js` 새로 만들기: `window.APP_CONFIG = { AI_MODE: "mock", API_URL: "" }` (URL은 비밀이 아님. 배포 후 배준희가 값을 채움). index.html에서 ai.js보다 먼저 불러오기
   - `askAI`: AI_MODE가 "live"이고 API_URL이 있으면 `POST API_URL` body `{ input, cards: searchCards 결과(id,title,causes,methods), history }` → 응답 `{answer}`
   - 응답 검증: methods가 3개이고 각 id가 `카드id-인덱스` 형식으로 보낸 카드에 실제로 있는지 확인. 아니면 규칙 기반 답변(ruleAnswer)으로 대체
