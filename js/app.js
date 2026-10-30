@@ -140,7 +140,7 @@ function renderLog() {
     const method = consult?.answer.methods.find((item) => item.id === entry.methodId);
     return `<div class="card"><h3 class="title-md">${esc(method?.title || "지도법")}</h3><p>${esc(entry.date)} · ${esc(labels[entry.result] || entry.result)}</p><p>${esc(entry.memo || "메모 없음")}</p></div>`;
   }).join("");
-  container.innerHTML = tried.length ? `<h2 class="title-md section">시도한 지도법</h2>${forms}<h2 class="title-md section">기록</h2>${timeline || '<div class="empty"><p>아직 기록이 없어요</p></div>'}` : '<div class="empty"><p>선택한 지도법이 없어요</p><a class="btn btn-secondary" href="#ask">상담하기</a></div>';
+  container.innerHTML = tried.length ? `<h2 class="title-md section">시도한 지도법</h2>${forms}<h2 class="title-md section">기록</h2>${timeline || '<div class="empty"><p>아직 기록이 없어요</p></div>'}${data.feedback.length ? '<button class="btn btn-primary btn-block" id="reconsult">결과 반영해서 다시 상담</button>' : ""}` : '<div class="empty"><p>선택한 지도법이 없어요</p><a class="btn btn-secondary" href="#ask">상담하기</a></div>';
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   container.querySelectorAll('input[name="date"]').forEach((input) => { input.value = today; });
@@ -156,6 +156,7 @@ document.getElementById("logContent")?.addEventListener("submit", (event) => {
   else toast("저장하지 못했어요");
 });
 document.getElementById("logContent")?.addEventListener("click", (event) => {
+  if (event.target.closest("#reconsult")) { reconsult(event.target.closest("#reconsult")); return; }
   const button = event.target.closest("button[data-result]");
   if (!button) return;
   const form = button.closest("form");
@@ -165,6 +166,27 @@ document.getElementById("logContent")?.addEventListener("click", (event) => {
     item.setAttribute("aria-pressed", String(item === button));
   });
 });
+
+// 최근 피드백이 있는 상담의 입력과 기록을 재상담에 전달한다.
+async function reconsult(button) {
+  const data = loadData();
+  const latestFeedback = data.feedback[0];
+  const previous = data.consults.find((consult) => consult.id === latestFeedback?.consultId);
+  if (!previous) return;
+  const feedback = data.feedback.filter((entry) => entry.consultId === previous.id).map((entry) => ({ ...entry, title: previous.answer.methods.find((method) => method.id === entry.methodId)?.title || "" }));
+  const history = { previous: { input: previous.input, methods: previous.answer.methods.map(({ id, title }) => ({ id, title })) }, feedback };
+  button.disabled = true;
+  try {
+    const answer = await askAI(previous.input, history);
+    const id = `c_${Date.now()}`;
+    data.consults.unshift({ id, createdAt: new Date().toISOString().slice(0, 10), round: 2, parentId: previous.id, input: previous.input, cardIds: [...new Set(answer.methods.map((method) => method.cardId))], answer, tried: [] });
+    if (!saveData(data)) throw new Error("저장 실패");
+    currentConsultId = id;
+    location.hash = "#result";
+    toast("다시 상담한 결과를 저장했어요");
+  } catch { toast("다시 상담하지 못했어요"); }
+  finally { button.disabled = false; }
+}
 
 // 홈은 저장된 프로필과 상담, 최근 피드백을 보여 준다.
 function renderHome() {
@@ -201,7 +223,10 @@ function renderResult() {
   const labels = { green: "가정 지도", yellow: "관찰 필요", red: "전문가 상담 권장" };
   const answer = consult.answer;
   const cards = consult.cardIds.map((id) => window.KNOWLEDGE.find((card) => card.id === id)).filter(Boolean);
-  container.innerHTML = `<div class="section"><span class="badge">${esc(labels[answer.level] || labels.green)}</span></div>
+  const previous = loadData().consults.find((item) => item.id === consult.parentId);
+  const findMethod = (id) => answer.methods.find((method) => method.id === id)?.title || previous?.answer.methods.find((method) => method.id === id)?.title || id;
+  const changes = answer.changes ? `<div class="section card"><h2 class="title-md">지난번과 달라진 점</h2>${answer.changes.kept.map((id) => `<p>유지: ${esc(findMethod(id))}</p>`).join("")}${answer.changes.replaced.map((item) => `<p>교체: ${esc(findMethod(item.from))} → ${esc(findMethod(item.to))}</p>`).join("")}</div>` : "";
+  container.innerHTML = `${changes}<div class="section"><span class="badge">${esc(labels[answer.level] || labels.green)}</span></div>
     <div class="section card"><h2 class="title-md">원인 해석</h2>${answer.causes.map((cause) => `<p>${esc(cause)}</p>`).join("")}</div>
     <div class="section"><h2 class="title-md">지도법</h2>${answer.methods.map((method) => `<div class="card"><h3 class="title-md">${esc(method.title)}</h3><p>${esc(method.how)}</p><button class="btn btn-secondary" data-try="${esc(method.id)}" ${consult.tried.includes(method.id) ? "disabled" : ""}>${consult.tried.includes(method.id) ? "선택했어요" : "해 볼게요"}</button></div>`).join("")}</div>
     <div class="section"><h2 class="title-md">근거 자료</h2>${cards.map((card) => `<div class="card"><h3 class="title-md">${esc(card.title)}</h3><p>${esc(card.source)}</p></div>`).join("")}</div>`;
