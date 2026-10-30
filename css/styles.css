@@ -248,3 +248,7 @@ svg.lucide, [data-lucide] { width: 20px; height: 20px; stroke-width: 2; flex-shr
 .cause-summary { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .result-note { margin-top: var(--s2); margin-bottom: var(--s2); }
 .result-note summary { cursor: pointer; }
+
+.cause-tips { margin-top: var(--s3); }
+.cause-tips ul { padding-left: var(--s5); }
+.cause-tips li { margin-top: var(--s2); }

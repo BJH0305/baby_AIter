@@ -35,7 +35,7 @@ function getConsultCards(input) {
   const cards = searchCards(input);
   // 이전 상담 화면도 단계별 변경 중 동작하도록 원인 카드에서 임시 호환 값을 만든다.
   const selected = cards.length ? cards : window.KNOWLEDGE.slice(0, 3);
-  return selected.map((card) => ({ ...card, causes: card.causes || [card.explain], methods: card.methods || [card.tip] }));
+  return selected.map((card) => ({ ...card, causes: card.causes || [card.explain], methods: card.methods || (card.tips || []).map((tip) => tip.text) }));
 }
 // 서버 답변의 지도법이 보낸 카드에 속하는지 검사한다.
 function isValidAnswer(answer, cards) {

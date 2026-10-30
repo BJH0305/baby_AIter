@@ -109,7 +109,7 @@ document.getElementById("sheetBackdrop").addEventListener("click", closeSheet);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 function render() {
   const age = document.getElementById("askAge");
-  if (age) age.textContent = `만 2~3세 대상 · 우리 아이 ${getProfile().ageMonths}개월`;
+  if (age) age.textContent = `24~47개월 대상 · 우리 아이 ${getProfile().ageMonths}개월`;
   document.getElementById("modeField").hidden = quizIndex < window.QUESTIONS.length || window.APP_CONFIG?.AI_MODE !== "live";
   renderHome();
   renderResult();
@@ -245,7 +245,7 @@ function inspectionRow(consult) {
 }
 function renderHome() {
   const data = loadData();
-  document.getElementById("profileSummary").textContent = `${data.profile.name} · 만 2~3세 (${data.profile.ageMonths}개월)`;
+  document.getElementById("profileSummary").textContent = `${data.profile.name} · ${data.profile.ageMonths}개월 · 24~47개월 대상`;
   const recent = getInspections(data).slice(0, 3);
   document.getElementById("homeRecent").innerHTML = recent.length ? recent.map(inspectionRow).join("") : '<div class="empty"><p>아직 검사 기록이 없어요</p><p>질문에 답하고 원인 후보를 살펴보세요.</p></div>';
 }
@@ -263,7 +263,7 @@ function renderCauseResult(container, consult) {
     const selected = scoreCauses(consult.input).find((c) => c.cardId === card.id)?.reasons.join(" / ") || "[확인 필요]";
     const same = (candidate.why || "").replace(/\s/g, "") === selected.replace(/\s/g, "");
     const summary = card.explain.match(/^[^。.!?]+[。.!?]?/)?.[0] || card.explain;
-    return `<article class="section card cause-card"><h2 class="title-md">${esc(card.title)}</h2><p class="cause-summary">${esc(summary)}</p><p><b>이럴 땐 이렇게</b><br>${esc(card.tip)}</p><details><summary>근거 보기</summary><div class="evidence-body"><p>${esc(card.explain)}</p><p>선택한 답변: ${esc(selected)}</p>${!same ? `<p>왜 이렇게 봤나요: ${esc(candidate.why)}</p>` : ""}<p class="muted source-text">${esc(displaySource(card))}</p><blockquote>${esc(card.evidence)}</blockquote>${card.verified === false ? '<span class="badge">검수 중</span>' : ""}</div></details></article>`;
+    return `<article class="section card cause-card"><h2 class="title-md">${esc(card.title)}</h2><p class="cause-summary">${esc(summary)}</p><div class="cause-tips"><b>이럴 땐 이렇게</b><ul>${card.tips.map((tip) => `<li>${esc(tip.text)} <span class="muted">(${esc(tip.page)})</span></li>`).join("")}</ul></div><details><summary>근거 보기</summary><div class="evidence-body"><p>${esc(card.explain)}</p><p>선택한 답변: ${esc(selected)}</p>${!same ? `<p>왜 이렇게 봤나요: ${esc(candidate.why)}</p>` : ""}<p class="muted source-text">${esc(displaySource(card))}</p><blockquote>${esc(card.evidence)}</blockquote>${card.verified === false ? '<span class="badge">검수 중</span>' : ""}</div></details></article>`;
   }).join("") : '<div class="section empty"><p>답변만으로 원인 후보를 좁히기 어려워요.</p><p>관찰 내용을 확인하고 다시 답해 주세요.</p></div>') + `<div class="section card"><h2 class="title-md">결과가 맞았나요?</h2><div class="chips" role="group" aria-label="결과 피드백">${Object.entries(feedbackLabels).map(([value, label]) => `<button type="button" class="chip ${consult.feedbackResult === value ? "on" : ""}" aria-pressed="${consult.feedbackResult === value}" data-cause-feedback="${value}" data-inspection="${esc(consult.id)}">${label}</button>`).join("")}</div></div><a class="btn btn-secondary btn-block" href="#ask">답변 다시 살펴보기</a><a class="btn btn-ghost btn-block" href="#log">검사 기록 보기</a>`;
 }
 // 한 탭으로 검사별 피드백을 갱신한다. 이전 지도법 피드백과 섞지 않는다.
@@ -342,7 +342,7 @@ document.getElementById("askForm")?.addEventListener("submit", async (event) => 
   const loading = document.getElementById("askLoading");
   if (quizIndex !== window.QUESTIONS.length || window.QUESTIONS.some((q) => !quizAnswers[q.id])) return;
   const input = getQuizInput();
-  if (!Number.isInteger(input.ageMonths) || input.ageMonths < 24 || input.ageMonths > 47) { toast("만 2~3세(24~47개월) 대상이에요. 프로필을 확인해 주세요"); return; }
+  if (!Number.isInteger(input.ageMonths) || input.ageMonths < 24 || input.ageMonths > 47) { toast("24~47개월 대상이에요. 프로필을 확인해 주세요"); return; }
   form.hidden = true;
   loading.hidden = false;
   try {

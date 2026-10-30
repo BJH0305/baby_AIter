@@ -15,7 +15,6 @@ window.KNOWLEDGE = [
     "questions": [
       "q-teething"
     ],
-    "tip": "이앓이가 관찰되면 물어도 되는 치아발육기를 제공해 주세요.",
     "redFlags": [
       "깨물기가 수 주간 계속됨",
       "물린 피부가 찢어지거나 붉어짐·부기가 있음"
@@ -40,7 +39,19 @@ window.KNOWLEDGE = [
     "source": "CHLA Early Connections Program - 아야! 아기가 물면 어떻게 해야 할까요? - 로컬 01_biting_onesheet_2025.pdf (공개 원문 URL [확인 필요]); 보조: 미국 Head Start - Biting: A Fact Sheet for Families - https://headstart.gov/mental-health/article/biting-fact-sheet-families (웹, 쪽수 없음)",
     "page": "1쪽(PDF 1쪽)",
     "evidence": "이가 나느라 잇몸이 아파서",
-    "verified": false
+    "verified": false,
+    "tips": [
+      {
+        "text": "깨물기 전후에 어떤 일이 있었는지, 아이의 기분과 주변 상황을 살펴봐 주세요.",
+        "page": "1쪽(PDF 1쪽)",
+        "evidence": "자녀가 어떤 기분인지 살펴봅니다."
+      },
+      {
+        "text": "조용하고 명확한 목소리로 “아야, 깨물면 아파”라고 알려 주세요.",
+        "page": "1쪽(PDF 1쪽)",
+        "evidence": "조용하고 명확한 목소리로 이야기하세요."
+      }
+    ]
   },
   {
     "id": "cause-frustration",
@@ -57,7 +68,6 @@ window.KNOWLEDGE = [
     "questions": [
       "q-situation"
     ],
-    "tip": "마음을 읽어 주고 “내가 놀고 있어”처럼 말로 표현하도록 도와주세요.",
     "redFlags": [
       "깨물기가 수 주간 계속됨",
       "물린 피부가 찢어지거나 붉어짐·부기가 있음"
@@ -82,7 +92,24 @@ window.KNOWLEDGE = [
     "source": "보건복지부·육아정책연구소 - 영유아 문제행동지도를 위한 어린이집 보육교사 지침서 2 - 로컬 06_2013_problem_behavior_teacher_guide2.pdf (공개 원문 URL [확인 필요]); 보조: 미국 Head Start - Biting: A Fact Sheet for Families - https://headstart.gov/mental-health/article/biting-fact-sheet-families (웹, 쪽수 없음)",
     "page": "인쇄 227~229쪽(PDF 29~31쪽)",
     "evidence": "놀잇감을 가져가지 못하게 하는 적절한 방법을 모름",
-    "verified": false
+    "verified": false,
+    "tips": [
+      {
+        "text": "“친구가 놀잇감을 만지는 게 싫었구나”처럼 아이의 마음을 읽어 주세요.",
+        "page": "인쇄 228쪽(PDF 30쪽)",
+        "evidence": "친구가 놀잇감을 만지는 게 싫었구나."
+      },
+      {
+        "text": "마음은 공감하되, 물거나 때려서는 안 된다고 낮은 목소리로 알려 주세요.",
+        "page": "인쇄 228쪽(PDF 30쪽)",
+        "evidence": "감정은 공감해주되 영아의 행동에 대해서는 단호하게 제한함"
+      },
+      {
+        "text": "친구에게 “내가 놀고 있어”라고 말로 표현하도록 도와주세요.",
+        "page": "인쇄 229쪽(PDF 31쪽)",
+        "evidence": "친구에게 내가 놀고 있는 거라고 말해주렴."
+      }
+    ]
   },
   {
     "id": "cause-attention",
@@ -99,7 +126,6 @@ window.KNOWLEDGE = [
     "questions": [
       "q-expression"
     ],
-    "tip": "평소 긍정적인 상호작용을 하며 아이의 말과 감정에 관심을 주세요.",
     "redFlags": [
       "깨물기가 수 주간 계속됨",
       "물린 피부가 찢어지거나 붉어짐·부기가 있음"
@@ -124,7 +150,24 @@ window.KNOWLEDGE = [
     "source": "경기도북부육아종합지원센터 - 영아 행동유형별 지도사례 - 로컬 05_2023_infant_behavior_guide_cases.pdf (공개 원문 URL [확인 필요]); 보조: 미국 Head Start - Biting: A Fact Sheet for Families - https://headstart.gov/mental-health/article/biting-fact-sheet-families (웹, 쪽수 없음)",
     "page": "인쇄 42~43쪽(PDF 22쪽); 보조 CHLA 1쪽",
     "evidence": "정서적으로 불안한 경우에 성인의 관심을 끌어내기 위해서",
-    "verified": false
+    "verified": false,
+    "tips": [
+      {
+        "text": "평소 긍정적인 상호작용으로 아이에게 관심을 보여 주세요.",
+        "page": "인쇄 42~43쪽(PDF 22쪽)",
+        "evidence": "정적인 상호작용을 통해 영아에게 긍정적인 관심을 보여줌"
+      },
+      {
+        "text": "아이의 행동을 유심히 살펴보고 감정과 행동을 말로 짚어 주세요.",
+        "page": "인쇄 42~43쪽(PDF 22쪽)",
+        "evidence": "영아의 행동을 유심히 관찰하기, 영아의 감정이나 행동 반영하기"
+      },
+      {
+        "text": "아이의 감정에 공감하고 하는 말을 적극적으로 들어 주세요.",
+        "page": "인쇄 42~43쪽(PDF 22쪽)",
+        "evidence": "영아가 하는 말을 적극적으로 경청하기"
+      }
+    ]
   },
   {
     "id": "cause-change",
@@ -141,7 +184,6 @@ window.KNOWLEDGE = [
     "questions": [
       "q-change"
     ],
-    "tip": "따뜻하게 안심시켜 주고, 아이의 마음을 읽어 주면서 행동의 한계를 알려주세요.",
     "redFlags": [
       "깨물기가 수 주간 계속됨",
       "물린 피부가 찢어지거나 붉어짐·부기가 있음"
@@ -166,7 +208,24 @@ window.KNOWLEDGE = [
     "source": "2023년 양육상담 자료집 해 볼 만한 고민 해 볼 만한 양육 - 동생이 태어나고 아이가 거칠게 행동해요 (발행기관 [확인 필요]) - 로컬 04_2023_online_counsel_problem_behavior.pdf (공개 원문 URL [확인 필요]); 보조: 미국 Head Start - Biting: A Fact Sheet for Families - https://headstart.gov/mental-health/article/biting-fact-sheet-families (웹, 쪽수 없음)",
     "page": "인쇄 17쪽(PDF 4쪽)",
     "evidence": "동생이 태어나고 아이가 거칠게 행동해요",
-    "verified": false
+    "verified": false,
+    "tips": [
+      {
+        "text": "무엇이 불만이고 화가 났는지 살펴보고 먼저 마음을 공감해 주세요.",
+        "page": "인쇄 17쪽(PDF 4쪽)",
+        "evidence": "아이가 어떤 점에 불만이 있고, 화가 났는지를"
+      },
+      {
+        "text": "마음은 받아 주되, 다른 사람을 때리는 행동은 허용하지 않는다고 알려 주세요.",
+        "page": "인쇄 17쪽(PDF 4쪽)",
+        "evidence": "맴매’하는 행동을 허용해서는 안되지만"
+      },
+      {
+        "text": "화가 날 때 “화가 나요”라고 말할 수 있도록 대안을 알려 주세요.",
+        "page": "인쇄 17쪽(PDF 4쪽)",
+        "evidence": "화가 나요"
+      }
+    ]
   },
   {
     "id": "cause-control",
@@ -183,7 +242,6 @@ window.KNOWLEDGE = [
     "questions": [
       "q-expression"
     ],
-    "tip": "안전한 범위에서 두 가지 중 고르게 하고, 스스로 해 볼 기회를 주세요.",
     "redFlags": [
       "깨물기가 수 주간 계속됨",
       "물린 피부가 찢어지거나 붉어짐·부기가 있음"
@@ -208,7 +266,24 @@ window.KNOWLEDGE = [
     "source": "2023년 양육상담 자료집 해 볼 만한 고민 해 볼 만한 양육 - 아이에게 훈육을 하는게 맞을까요? (발행기관 [확인 필요]) - 로컬 03_2023_online_counsel_parenting_style.pdf (공개 원문 URL [확인 필요]); 보조: 미국 Head Start - Biting: A Fact Sheet for Families - https://headstart.gov/mental-health/article/biting-fact-sheet-families (웹, 쪽수 없음)",
     "page": "인쇄 51쪽(PDF 4쪽)",
     "evidence": "24개월경부터는 언어 표현이 증가하고 자율성이 생기면서",
-    "verified": false
+    "verified": false,
+    "tips": [
+      {
+        "text": "아이가 스스로 해 볼 기회를 주고 지켜봐 주세요.",
+        "page": "인쇄 51쪽(PDF 4쪽)",
+        "evidence": "아이가 스스로 할 수 있도록 기회를 많이 주고, 지켜보는 태도가 필요합니다."
+      },
+      {
+        "text": "야단치거나 대신하기보다 어떻게 하면 되는지 하나씩 반복해서 알려 주세요.",
+        "page": "인쇄 51쪽(PDF 4쪽)",
+        "evidence": "야단치기 혹은 대신 해주시기 보다는"
+      },
+      {
+        "text": "아이의 마음을 읽어 주고 “하고 싶어요”, “싫어요” 같은 간단한 표현을 알려 주세요.",
+        "page": "인쇄 51쪽(PDF 4쪽)",
+        "evidence": "아이가 할 수 있는 간단한 표현"
+      }
+    ]
   },
   {
     "id": "cause-play",
@@ -225,7 +300,6 @@ window.KNOWLEDGE = [
     "questions": [
       "q-situation"
     ],
-    "tip": "거친 놀이는 멈추고 부드럽게 만지는 모습을 보여 주며 차례 지키기를 격려해 주세요.",
     "redFlags": [
       "깨물기가 수 주간 계속됨",
       "물린 피부가 찢어지거나 붉어짐·부기가 있음"
@@ -250,7 +324,24 @@ window.KNOWLEDGE = [
     "source": "CHLA Early Connections Program - 아야! 아기가 물면 어떻게 해야 할까요? - 로컬 01_biting_onesheet_2025.pdf (공개 원문 URL [확인 필요]); 보조: 미국 Head Start - Biting: A Fact Sheet for Families - https://headstart.gov/mental-health/article/biting-fact-sheet-families (웹, 쪽수 없음); 영국 NHS - Advice for Parents (0-5 Years), Biting - https://www.startingwell.org.uk/advice-for-parents-0to5 (웹, 쪽수 없음)",
     "page": "1쪽(PDF 1쪽)",
     "evidence": "흥분하거나 기운이 넘쳐서",
-    "verified": false
+    "verified": false,
+    "tips": [
+      {
+        "text": "깨물 것 같은 징후가 보이면 장난감이나 새로운 활동으로 주의를 돌려 주세요.",
+        "page": "1쪽(PDF 1쪽)",
+        "evidence": "새로운 활동을 시작하거나, 대화를"
+      },
+      {
+        "text": "조용하고 명확하게 “깨물면 아파”라고 알려 주세요.",
+        "page": "1쪽(PDF 1쪽)",
+        "evidence": "명확하고 간단한 표현 사용"
+      },
+      {
+        "text": "다른 아이를 물었다면 물린 아이를 보살피고 주의를 기울여 주세요.",
+        "page": "1쪽(PDF 1쪽)",
+        "evidence": "물린 아이를 보살피고 주의를 기울입니다."
+      }
+    ]
   },
   {
     "id": "cause-condition",
@@ -267,7 +358,6 @@ window.KNOWLEDGE = [
     "questions": [
       "q-condition"
     ],
-    "tip": "수면·식사·놀이의 규칙적인 일정을 유지해 주세요.",
     "redFlags": [
       "깨물기가 수 주간 계속됨",
       "물린 피부가 찢어지거나 붉어짐·부기가 있음"
@@ -292,7 +382,19 @@ window.KNOWLEDGE = [
     "source": "CHLA Early Connections Program - 아야! 아기가 물면 어떻게 해야 할까요? - 로컬 01_biting_onesheet_2025.pdf (공개 원문 URL [확인 필요]); 보조: 미국 Head Start - Biting: A Fact Sheet for Families - https://headstart.gov/mental-health/article/biting-fact-sheet-families (웹, 쪽수 없음); 미국 Virtual Lab School - Considering Behavior - https://static.virtuallabschool.org/atmt/guidance/IT.Guidance_2.InfantsToddlers_E1.ConsideringBehavior.pdf (1쪽)",
     "page": "1쪽(PDF 1쪽)",
     "evidence": "아이가 피곤한가요?",
-    "verified": false
+    "verified": false,
+    "tips": [
+      {
+        "text": "수면·식사·놀이의 규칙적인 일정이나 일과를 유지해 주세요.",
+        "page": "1쪽(PDF 1쪽)",
+        "evidence": "수면, 식사, 놀이에 대한 규칙적인 일정이나 루틴을"
+      },
+      {
+        "text": "하루 중 언제 깨무는지, 아이가 피곤하거나 아픈지 살펴봐 주세요.",
+        "page": "1쪽(PDF 1쪽)",
+        "evidence": "하루 중 언제 그런 행동을 하는지"
+      }
+    ]
   }
 ];
 
