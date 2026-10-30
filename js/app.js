@@ -67,7 +67,7 @@ function saveData(data) {
 // 위험 신호나 14일 이상 효과 없음 기록이 있으면 답변보다 규칙을 우선한다.
 function applySafety(answer, input, feedback = [], today = new Date()) {
   const text = `${input.text || ""} ${input.situation || ""}`;
-  const hasFlag = (window.KNOWLEDGE || []).some((card) => card.redFlags.some((flag) => text.includes(flag)));
+  const hasFlag = (window.KNOWLEDGE || []).some((card) => (card.redFlagKeywords || []).some((flag) => text.includes(flag)));
   const dates = feedback.map((entry) => entry.date).filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date)).sort();
   const elapsed = dates.length ? (Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - Date.parse(`${dates[0]}T00:00:00Z`)) / 86400000 : 0;
   const noProgress = dates.length === feedback.length && dates.length > 0 && feedback.every((entry) => entry.result === "none") && elapsed >= 14;
@@ -263,7 +263,7 @@ function renderResult() {
   const findMethod = (id) => answer.methods.find((method) => method.id === id)?.title || previous?.answer.methods.find((method) => method.id === id)?.title || id;
   const changes = answer.changes ? `<div class="section card"><h2 class="title-md">지난번과 달라진 점</h2>${answer.changes.kept.map((id) => `<p>유지: ${esc(findMethod(id))}</p>`).join("")}${answer.changes.replaced.map((item) => `<p>교체: ${esc(findMethod(item.from))} → ${esc(findMethod(item.to))}</p>`).join("")}</div>` : "";
   const safety = answer.level === "red" ? '<div class="section card"><h2 class="title-md">전문가 상담 권장</h2><p>육아종합지원센터 또는 소아청소년과에 상담해 보세요.</p></div>' : "";
-  container.innerHTML = `${changes}<div class="section"><span class="badge">${esc(labels[answer.level] || labels.green)}</span></div>${safety}
+  container.innerHTML = `${safety}${changes}<div class="section"><span class="badge">${esc(labels[answer.level] || labels.green)}</span></div>
     <div class="section card"><h2 class="title-md">원인 해석</h2>${answer.causes.map((cause) => `<p>${esc(cause)}</p>`).join("")}</div>
     <div class="section"><h2 class="title-md">지도법</h2>${answer.methods.map((method) => `<div class="card"><h3 class="title-md">${esc(method.title)}</h3>${method.how !== method.title ? `<p>${esc(method.how)}</p>` : ""}<p class="muted">왜: ${esc(method.why)}</p><p class="muted">근거: ${esc(window.KNOWLEDGE.find((card) => card.id === method.cardId)?.title || method.cardId)}</p><button class="btn btn-secondary" data-try="${esc(method.id)}" ${consult.tried.includes(method.id) ? "disabled" : ""}>${consult.tried.includes(method.id) ? "선택했어요" : "해 볼게요"}</button></div>`).join("")}</div>
     <div class="section"><h2 class="title-md">근거 자료</h2>${cards.map((card) => `<div class="card"><h3 class="title-md">${esc(card.title)}</h3><p>${esc(card.source)}</p></div>`).join("")}</div>`;
