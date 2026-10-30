@@ -9,7 +9,8 @@
   - 메모: index.html, js/app.js, js/mock.js, js/ai.js / 탭과 상담 결과 링크 확인 / 각 화면 내용은 이후 작업에서 구현
 - [x] T2. 근거 카드 검색: `js/knowledge.js`(이미 있음, 내용 수정 금지)의 `window.KNOWLEDGE`를 읽어 `searchCards({target, situation, text, ageMonths})` 함수를 `js/ai.js`에 만든다. 태그·키워드 일치 점수로 상위 3개 반환. 함수 위에 동작 설명 주석.
   - 메모: js/ai.js / 대상·상황·연령으로 검색 결과 확인 / 카드 내용은 변경하지 않음
-- [ ] T3. AI 호출 구조 (mock 먼저): `js/ai.js`에 `AI_MODE`, `buildPrompt(input, cards, history)`, `askAI(input, history)`를 만든다. mock 모드는 `js/mock.js`의 답변을 0.8~1.2초 뒤 반환. mock 답변은 knowledge.js 카드 내용만 써서 2세트 작성: (a) 1차 상담 답변 (b) 피드백 반영 2차 답변. 답변 형식(JSON): `{ causes:[...], methods:[{title, how, why, cardId}], level:"green|yellow|red", note }`.
+- [x] T3. AI 호출 구조 (mock 먼저): `js/ai.js`에 `AI_MODE`, `buildPrompt(input, cards, history)`, `askAI(input, history)`를 만든다. mock 모드는 `js/mock.js`의 답변을 0.8~1.2초 뒤 반환. mock 답변은 knowledge.js 카드 내용만 써서 2세트 작성: (a) 1차 상담 답변 (b) 피드백 반영 2차 답변. 답변 형식(JSON): `{ causes:[...], methods:[{title, how, why, cardId}], level:"green|yellow|red", note }`.
+  - 메모: js/ai.js, js/mock.js, docs/DATA.md / 피드백 유무별 mock 답변 확인 / 시연용 고정 답변
 - [ ] T4. 상담하기 화면: 대상 칩(친구/동생), 상황 칩 5개(장난감 다툼, 동생을 안고 있을 때, 피곤·졸릴 때, 흥분했을 때, 이유 모름), 짧은 설명 입력, 개월 수(프로필에서 가져옴). "분석하기" → skeleton → 결과 화면.
 - [ ] T5. 결과 화면: 원인 해석 카드, 지도법 3개 카드(각각 "해 볼게요" 버튼), 근거 카드 목록(제목·출처), 단계 배지(가정 지도/관찰 필요/전문가 상담 권장). 상담 1건을 localStorage에 저장 + 토스트.
 - [ ] T6. 홈 화면: 아이 프로필(가명·개월 수, 수정 가능), 진행 중 상담 1건 요약, 이번 주 시도한 지도법 수, 최근 기록 3개, 빈 상태.
@@ -30,3 +31,9 @@
 
 ## 질문
 (Codex가 막히면 여기에 적는다)
+
+⏸ 확인 필요 (T3)
+상황: 피드백 기록의 데이터 형식과 2차 mock 답변을 선택하는 기준이 아직 정해져 있지 않음.
+선택지: A. 카드 문장으로 고정된 시연용 1차·2차 답변을 만들고 T8에서 피드백 연결 / B. 지금 피드백 데이터 형식과 선택 규칙부터 정해 구현
+추천: A — 현재 작업 범위와 시연 시나리오에 맞고 피드백 구조는 T7~T8에서 정할 수 있음.
+  - 결정(Claude): **A로 진행.** 단, 데이터 형식과 mock 선택 규칙은 지금 `docs/DATA.md`대로 맞춘다 (askAI의 history 형식, Answer 형식, MOCK.first/second 선택 규칙). T7~T8은 같은 형식에 연결만 한다.

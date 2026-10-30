@@ -18,3 +18,23 @@ function searchCards({ target = "", situation = "", text = "", ageMonths } = {})
     .slice(0, 3)
     .map((entry) => entry.card);
 }
+
+const AI_MODE = "mock";
+
+// 상담 정보와 선택된 근거, 피드백을 안전한 답변 지시문으로 묶는다.
+function buildPrompt(input, cards, history) {
+  return [
+    "제공된 근거 카드 내용만 사용하고, 내용이 없으면 모른다고 답하세요. 진단하지 말고 출처 카드 id를 표시하세요.",
+    "피드백이 있으면 효과 있던 방법은 유지·강화하고 효과 없던 방법은 근거 카드의 다른 방법으로 교체하며 changes에 변경 내용을 요약하세요.",
+    `상담: ${JSON.stringify(input)}`,
+    `근거 카드: ${JSON.stringify(cards)}`,
+    `이전 기록: ${JSON.stringify(history || null)}`
+  ].join("\n");
+}
+
+// 피드백 유무에 따라 시연용 답변을 선택한다.
+async function askAI(input, history = null) {
+  const answer = history && Array.isArray(history.feedback) && history.feedback.length ? MOCK.second : MOCK.first;
+  return new Promise((resolve) => setTimeout(() => resolve(structuredClone(answer)), 1000));
+}
+
