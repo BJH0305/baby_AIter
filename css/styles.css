@@ -3,43 +3,17 @@
    디자인이 정해지면(Mobbin에서 고른 레퍼런스) 이 값들만 바꿔서 전체 분위기를 맞춘다.
    ========================================================= */
 :root {
-  /* 포인트 색 */
-  --accent: #527b68;
-  --accent-strong: #355e4b;
-  --accent-soft: #e7efe8;
-  --on-accent: #fffefa;
-
-  /* 무채색 */
-  --bg: #f7f6f1;
-  --surface: #fffefa;
-  --line: #e7e9e2;
-  --text: #24332e;
-  --text-2: #53625a;
-  --text-3: #718079;
-
-  /* 상태 색 (의미 있을 때만) */
-  --danger: #e5484d;
-  --danger-soft: #fdecec;
-  --success: #12a150;
-
-  /* 글꼴 */
-  --font-body: "Noto Sans KR", -apple-system, BlinkMacSystemFont, system-ui, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-  --font-head: var(--font-body);
-  --head-weight: 700;
-  --head-tracking: -0.02em;
-
-  /* 모서리·테두리 */
-  --r-sm: 8px;
-  --r-ctl: 14px;     /* 버튼·입력창 */
-  --r-card: 23px;    /* 카드·리스트 */
-  --r-pill: 999px;   /* 칩 */
-  --card-border: 1px solid var(--line);
-  --topbar-bg: var(--bg);
-  --topbar-fg: var(--text);
-
-  /* 간격 */
-  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px; --s8: 32px;
-  --app-width: 430px;
+  --bg: linear-gradient(135deg, #f1f5f0 0%, #eaf0f1 100%);
+  --text: #1d2a24; --text-2: #5f6e66; --text-3: #5f6e66;
+  --accent: #2f6a52; --accent-strong: var(--accent); --accent-soft: #e2ede5;
+  --on-accent: #ffffff; --surface: #ffffffd9; --surface-solid: #ffffff; --surface-soft: #f3f7f3; --line: #dbe4dd;
+  --danger: #8a5a12; --danger-soft: #fff6ea; --warning-line: #efcf9e; --success: var(--accent);
+  --font-body: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Malgun Gothic", sans-serif;
+  --font-head: var(--font-body); --head-weight: 700; --head-tracking: -0.03em;
+  --r-sm: 8px; --r-ctl: 16px; --r-card: 24px; --r-pill: 999px;
+  --card-border: 1px solid var(--line); --topbar-bg: var(--surface); --topbar-fg: var(--text);
+  --s1: 8px; --s2: 8px; --s3: 16px; --s4: 16px; --s5: 24px; --s6: 24px; --s8: 32px;
+  --app-width: 100%; --shadow: 0 12px 32px rgba(47,106,82,.06); --orbit-shadow: 0 8px 24px rgba(47,106,82,.14);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -47,7 +21,8 @@
 html, body { height: 100%; }
 body {
   font-family: var(--font-body);
-  background: #e9ecef;
+  background: var(--bg);
+  background-attachment: fixed;
   color: var(--text);
   font-size: 15px;
   line-height: 1.5;
@@ -108,7 +83,7 @@ svg.lucide, [data-lucide] { width: 20px; height: 20px; stroke-width: 2; flex-shr
 }
 .tabbar a {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
-  font-size: 11px; font-weight: 600; color: var(--text-3); padding: 4px 0;
+  font-size: 11px; font-weight: 700; color: var(--text-3); padding: 4px 0;
 }
 .tabbar a.active { color: var(--text); }
 .tabbar a.active svg { color: var(--accent); }
@@ -116,7 +91,7 @@ svg.lucide, [data-lucide] { width: 20px; height: 20px; stroke-width: 2; flex-shr
 /* ---------- 타이포 ---------- */
 .title-lg { font-family: var(--font-head); font-size: 22px; font-weight: var(--head-weight); letter-spacing: var(--head-tracking); line-height: 1.35; }
 .title-md { font-family: var(--font-head); font-size: 17px; font-weight: var(--head-weight); letter-spacing: var(--head-tracking); }
-.label { font-size: 13px; font-weight: 600; color: var(--text-2); }
+.label { font-size: 13px; font-weight: 700; color: var(--text-2); }
 .muted { color: var(--text-3); font-size: 13px; }
 .section { margin-bottom: var(--s6); }
 .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--s3); }
@@ -139,9 +114,9 @@ svg.lucide, [data-lucide] { width: 20px; height: 20px; stroke-width: 2; flex-shr
   cursor: pointer;
 }
 .list-item:last-child { border-bottom: 0; }
-.list-item:hover { background: #fafbfc; }
+.list-item:hover { background: var(--surface-soft); }
 .list-item .body { flex: 1; min-width: 0; }
-.list-item .name { font-weight: 600; }
+.list-item .name { font-weight: 700; }
 .list-item .sub { font-size: 13px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .thumb {
   width: 40px; height: 40px; border-radius: var(--r-ctl);
@@ -159,7 +134,7 @@ svg.lucide, [data-lucide] { width: 20px; height: 20px; stroke-width: 2; flex-shr
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   height: 48px; padding: 0 var(--s5);
   border: 0; border-radius: var(--r-ctl);
-  font-weight: 600; font-size: 15px; cursor: pointer;
+  font-weight: 700; font-size: 15px; cursor: pointer;
   transition: background .15s;
 }
 .btn-primary { background: var(--accent); color: var(--on-accent); }
@@ -191,13 +166,13 @@ svg.lucide, [data-lucide] { width: 20px; height: 20px; stroke-width: 2; flex-shr
 .chip {
   height: 34px; padding: 0 14px;
   border: 1px solid var(--line); border-radius: var(--r-pill);
-  background: var(--surface); font-size: 14px; font-weight: 500; cursor: pointer;
+  background: var(--surface); font-size: 14px; font-weight: 700; cursor: pointer;
 }
-.chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-strong); font-weight: 600; }
+.chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-strong); font-weight: 700; }
 
 .badge {
   display: inline-block; padding: 2px 8px; border-radius: 6px;
-  font-size: 12px; font-weight: 600;
+  font-size: 12px; font-weight: 700;
   background: var(--bg); color: var(--text-2);
 }
 .badge.accent { background: var(--accent-soft); color: var(--accent-strong); }
@@ -240,7 +215,7 @@ svg.lucide, [data-lucide] { width: 20px; height: 20px; stroke-width: 2; flex-shr
 /* 카드 요약과 펼칠 수 있는 근거를 기존 구성에 담는다. */
 .cause-card > p { margin-top: var(--s3); }
 .cause-card details { margin-top: var(--s4); }
-.cause-card summary { cursor: pointer; color: var(--text-2); font-weight: 600; }
+.cause-card summary { cursor: pointer; color: var(--text-2); font-weight: 700; }
 .evidence-body { padding-top: var(--s3); }
 .evidence-body p, .evidence-body blockquote { margin-bottom: var(--s3); }
 
@@ -308,3 +283,19 @@ body { padding: 0; }
   .desktop-page-title { display: block; margin-bottom: var(--s6); font-size: 32px; }
   #logContent { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s4); }#logContent .card { margin: 0; }
 }
+
+/* D2: A안 재질과 8px 간격. */
+body { font-weight: 400; }
+.card { box-shadow: var(--shadow); }
+.btn { gap: var(--s2); border-radius: var(--r-pill); min-height: 48px; height: auto; padding: var(--s3) var(--s5); font-weight: 700; }
+.btn-secondary { background: transparent; color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.btn-ghost { background: transparent; box-shadow: none; color: var(--text-2); }
+.btn-sm { min-height: 32px; padding: var(--s1) var(--s2); font-size: 12px; }
+.chip { height: auto; min-height: 40px; padding: var(--s2) var(--s4); font-weight: 400; }
+.chip.on { font-weight: 700; }
+.home-node .icon-badge, .home-core { box-shadow: var(--orbit-shadow); background: var(--surface-solid); }
+.cause-summary { padding: var(--s4); background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--r-ctl); font-size: 15px; }
+.cause-card details { padding-top: var(--s4); border-top: 1px solid var(--line); }
+.inspection-actions { display: flex; gap: var(--s2); flex-wrap: wrap; }
+.result-heading { margin-bottom: var(--s4); }.result-heading > p { margin-bottom: var(--s2); }
+@media (min-width: 768px) { .desktop-nav .btn { white-space: nowrap; }.hero-copy h2 { font-size: 48px; }.card { padding: var(--s5); } }
