@@ -1,10 +1,8 @@
-// 대상과 상황에 맞는 카드에 점수를 매기고 연령 범위에 맞는 상위 3개를 반환한다.
+// 대상과 상황에 맞는 카드에 점수를 매기고 연령으로 제한하지 않는 상위 3개를 반환한다.
 function searchCards({ target = "", situation = "", text = "", ageMonths } = {}) {
   const input = `${situation} ${text}`.toLowerCase();
   const words = input.split(/\s+/).filter(Boolean);
   return (window.KNOWLEDGE || [])
-    .filter((card) => ageMonths == null || ageMonths === "" ||
-      (Number(ageMonths) >= card.ageMonths[0] && Number(ageMonths) <= card.ageMonths[1]))
     .map((card, index) => {
       let score = target && (card.targets || []).includes(target) ? 2 : 0;
       for (const tag of (card.tags || card.clues || [])) {
@@ -85,8 +83,6 @@ async function askAI(input, history = null, requestedMode = "fast") {
 
 // 선택한 답변의 내부 가중치만으로 후보를 정렬한다. 메모·대상·장소만으로 원인을 추정하지 않는다.
 function scoreCauses(input = {}) {
-  const age = Number(input.ageMonths);
-  if (!Number.isInteger(age) || age < 12 || age > 59) return [];
   return window.KNOWLEDGE.map((card, index) => {
     let score = 0;
     const reasons = [];
