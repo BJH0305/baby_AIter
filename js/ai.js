@@ -54,7 +54,8 @@ function isValidAnswer(answer, cards) {
 }
 
 // 서버가 실패하거나 지연되면 동일한 카드로 기본 답변을 만든다.
-async function askAI(input, history = null) {
+async function askAI(input, history = null, requestedMode = "fast") {
+  const mode = requestedMode === "deep" ? "deep" : "fast";
   const cards = getConsultCards(input);
   const config = window.APP_CONFIG || {};
   const useLive = config.AI_MODE === "live";
@@ -62,20 +63,20 @@ async function askAI(input, history = null) {
     const controller = new AbortController();
     let timer;
     try {
-      const timeout = new Promise((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(new Error("timeout")); }, 12000); });
-      const request = fetch(config.API_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ input, cards: cards.map(({ id, title, causes, methods }) => ({ id, title, causes, methods })), history }), signal: controller.signal }).then(async (response) => {
+      const timeout = new Promise((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(new Error("timeout")); }, mode === "deep" ? 30000 : 12000); });
+      const request = fetch(config.API_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ input, cards: cards.map(({ id, title, causes, methods }) => ({ id, title, causes, methods })), history, mode }), signal: controller.signal }).then(async (response) => {
         if (!response.ok) throw new Error("request failed");
         return response.json();
       });
       const result = await Promise.race([request, timeout]);
-      if (!isValidAnswer(result.answer, cards)) throw new Error("invalid answer");
-      Object.defineProperty(result.answer, "_meta", { value: { source: "ai", cards, fallback: false } });
+      if (!["fast", "deep"].includes(result.mode) || !isValidAnswer(result.answer, cards)) throw new Error("invalid answer");
+      Object.defineProperty(result.answer, "_meta", { value: { source: "ai", cards, fallback: false, mode: result.mode } });
       return result.answer;
     } catch {} finally { clearTimeout(timer); }
   }
   await new Promise((resolve) => setTimeout(resolve, 1000));
   const answer = ruleAnswer(input, cards, history);
-  Object.defineProperty(answer, "_meta", { value: { source: "rule", cards, fallback: useLive } });
+  Object.defineProperty(answer, "_meta", { value: { source: "rule", cards, fallback: useLive, mode } });
   return answer;
 }
 

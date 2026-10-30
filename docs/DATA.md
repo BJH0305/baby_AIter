@@ -22,6 +22,7 @@
   cardIds: ["bite-sibling", "bite-basic"],
   answer: Answer,
   source: "ai" | "rule",          // 답변 생성 방식
+  mode: "fast" | "deep",          // 서버가 실제 사용한 답변 방식
   tried: ["m1", "m3"]             // "해 볼게요" 누른 methods id
 }
 ```

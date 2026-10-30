@@ -29,6 +29,7 @@
           <div class="field"><span class="label">상황</span><div class="chips" id="situationChips"><button type="button" class="chip on" data-value="장난감 다툼">장난감 다툼</button><button type="button" class="chip" data-value="동생을 안고 있을 때">동생을 안고 있을 때</button><button type="button" class="chip" data-value="피곤·졸릴 때">피곤·졸릴 때</button><button type="button" class="chip" data-value="흥분했을 때">흥분했을 때</button><button type="button" class="chip" data-value="이유 모름">이유 모름</button></div></div>
           <div class="field"><label class="label" for="askText">상황 설명</label><textarea class="textarea" id="askText" placeholder="상황을 짧게 적어 주세요"></textarea></div>
           <p class="muted section" id="askAge"></p>
+          <div class="field" id="modeField"><span class="label">답변 방식</span><div class="chips" id="modeChips"><button type="button" class="chip on" data-value="fast" aria-pressed="true">빠른 답변</button><button type="button" class="chip" data-value="deep" aria-pressed="false">깊게 생각하기</button></div></div>
           <button class="btn btn-primary btn-block" type="submit">분석하기</button>
         </form>
         <div id="askLoading" hidden aria-live="polite"><p>분석하고 있어요</p><div class="skeleton" style="height:80px"></div></div>
