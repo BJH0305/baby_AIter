@@ -35,7 +35,7 @@ function showScreen(name) {
   );
   // 입력 화면에서는 탭바 숨김
   const tabbar = document.getElementById("tabbar");
-  if (tabbar) tabbar.hidden = target === "new";
+  if (tabbar) tabbar.hidden = target === "result";
   window.scrollTo(0, 0);
   render();
 }

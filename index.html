@@ -3,8 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>서비스 이름</title>
-  <!-- 글꼴: Google Fonts / 아이콘: Lucide -->
+  <title>베이비 AI터</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap" />
@@ -13,112 +12,35 @@
 </head>
 <body>
   <div class="app">
-    <!-- 화면 1: 홈 ===================================================== -->
     <section class="screen" data-screen="home">
-      <header class="topbar">
-        <h1>서비스 이름</h1>
-        <button class="icon-btn" aria-label="알림"><i data-lucide="bell"></i></button>
-      </header>
-      <main class="content">
-        <div class="section">
-          <p class="muted">10월 30일 금요일</p>
-          <h2 class="title-lg">오늘 확인할 항목이<br />3개 있어요</h2>
-        </div>
-
-        <div class="section stat-row">
-          <div class="stat"><b>12</b><span>이번 주 기록</span></div>
-          <div class="stat"><b>87%</b><span>목표 달성</span></div>
-          <div class="stat"><b>3</b><span>남은 항목</span></div>
-        </div>
-
-        <div class="section card">
-          <div class="label" style="margin-bottom:8px">이번 주 진행률</div>
-          <div class="progress"><i style="width:62%"></i></div>
-          <p class="muted" style="margin-top:8px">5개 중 3개 완료 · 일요일까지 2개 남음</p>
-        </div>
-
-        <div class="section">
-          <div class="section-head">
-            <h3 class="title-md">최근 항목</h3>
-            <a href="#list">전체 보기</a>
-          </div>
-          <div class="list" id="recentList"></div>
-        </div>
-        <a class="btn btn-secondary btn-block" href="#new"><i data-lucide="plus"></i>새로 추가</a>
-      </main>
+      <header class="topbar"><h1>베이비 AI터</h1></header>
+      <main class="content"><h2 class="title-lg">홈</h2></main>
     </section>
-
-    <!-- 화면 2: 목록 =================================================== -->
-    <section class="screen" data-screen="list" hidden>
-      <header class="topbar">
-        <a class="icon-btn" href="#home" aria-label="뒤로"><i data-lucide="chevron-left"></i></a>
-        <h1>전체 목록</h1>
-        <button class="icon-btn" aria-label="검색"><i data-lucide="search"></i></button>
-      </header>
-      <main class="content">
-        <div class="chips section" id="filterChips">
-          <button class="chip on" data-f="all">전체</button>
-          <button class="chip" data-f="todo">진행 중</button>
-          <button class="chip" data-f="done">완료</button>
-        </div>
-        <div class="list" id="fullList"></div>
-        <div class="empty" id="emptyState" hidden>
-          <i data-lucide="inbox"></i>
-          <p>아직 등록된 항목이 없어요</p>
-          <a class="btn btn-secondary btn-sm" href="#new">첫 항목 추가하기</a>
-        </div>
-      </main>
+    <section class="screen" data-screen="ask" hidden>
+      <header class="topbar"><h1>상담하기</h1></header>
+      <main class="content"><h2 class="title-lg">상담하기</h2><a href="#result" class="btn btn-secondary">결과 보기</a></main>
     </section>
-
-    <!-- 화면 3: 입력 =================================================== -->
-    <section class="screen" data-screen="new" hidden>
-      <header class="topbar">
-        <a class="icon-btn" href="#home" aria-label="닫기"><i data-lucide="x"></i></a>
-        <h1>새 항목</h1>
-      </header>
-      <main class="content">
-        <form id="newForm">
-          <div class="field">
-            <label class="label" for="fTitle">제목</label>
-            <input class="input" id="fTitle" placeholder="예: 의창구 분리배출 요일 확인" required />
-          </div>
-          <div class="field">
-            <span class="label">분류</span>
-            <div class="chips" id="catChips">
-              <button type="button" class="chip on">생활</button>
-              <button type="button" class="chip">학교</button>
-              <button type="button" class="chip">기타</button>
-            </div>
-          </div>
-          <div class="field">
-            <label class="label" for="fMemo">메모</label>
-            <textarea class="textarea" id="fMemo" placeholder="자세한 내용을 적어 주세요"></textarea>
-          </div>
-        </form>
-      </main>
-      <div class="bottom-cta">
-        <button class="btn btn-primary btn-block" form="newForm" type="submit">저장</button>
-      </div>
+    <section class="screen" data-screen="result" hidden>
+      <header class="topbar"><a class="icon-btn" href="#ask" aria-label="뒤로"><i data-lucide="chevron-left"></i></a><h1>결과</h1></header>
+      <main class="content"><h2 class="title-lg">결과</h2></main>
     </section>
-
-    <!-- 하단 탭바 (화면이 3개 이하면 그대로, 필요 없으면 삭제) -->
-    <nav class="tabbar" id="tabbar">
+    <section class="screen" data-screen="log" hidden>
+      <header class="topbar"><h1>기록</h1></header>
+      <main class="content"><h2 class="title-lg">기록</h2></main>
+    </section>
+    <nav class="tabbar" id="tabbar" aria-label="주 메뉴">
       <a href="#home" data-tab="home"><i data-lucide="house"></i>홈</a>
-      <a href="#list" data-tab="list"><i data-lucide="list"></i>목록</a>
-      <a href="#new" data-tab="new"><i data-lucide="circle-plus"></i>추가</a>
+      <a href="#ask" data-tab="ask"><i data-lucide="message-circle"></i>상담하기</a>
+      <a href="#log" data-tab="log"><i data-lucide="list"></i>기록</a>
     </nav>
   </div>
-
-  <!-- 바텀시트 (상세 보기) -->
   <div class="sheet-backdrop" id="sheetBackdrop"></div>
-  <div class="sheet" id="sheet">
-    <div id="sheetBody"></div>
-    <button class="btn btn-ghost btn-block" style="margin-top:16px" id="sheetClose">닫기</button>
-  </div>
-
+  <div class="sheet" id="sheet"><div id="sheetBody"></div><button class="btn btn-ghost btn-block" id="sheetClose">닫기</button></div>
   <div class="toast" id="toast"></div>
-
   <script src="js/data.js"></script>
+  <script src="js/knowledge.js"></script>
+  <script src="js/mock.js"></script>
+  <script src="js/ai.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
