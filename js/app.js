@@ -294,7 +294,7 @@ document.getElementById("sheetBody")?.addEventListener("submit", (event) => {
   data.profile.ageMonths = Number(document.getElementById("profileAge").value);
   if (!data.profile.name) return;
   if (!Number.isInteger(data.profile.ageMonths) || data.profile.ageMonths < 12 || data.profile.ageMonths > 59) { toast("개월 수는 12~59개월 사이로 입력해 주세요"); return; }
-  if (saveData(data)) { closeSheet(); renderHome(); refreshIcons(); toast("프로필을 저장했어요"); }
+  if (saveData(data)) { closeSheet(); render(); toast("프로필을 저장했어요"); }
   else toast("저장하지 못했어요");
 });
 
