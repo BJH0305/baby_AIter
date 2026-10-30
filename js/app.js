@@ -177,13 +177,9 @@ async function reconsult(button) {
 // 홈은 저장된 프로필과 상담, 최근 피드백을 보여 준다.
 function renderHome() {
   const data = loadData();
-  const name = document.getElementById("profileName");
-  const age = document.getElementById("profileAge");
-  if (!name || !age) return;
-  if (!document.getElementById("profileForm").contains(document.activeElement)) {
-    name.value = data.profile.name;
-    age.value = data.profile.ageMonths;
-  }
+  const summary = document.getElementById("profileSummary");
+  if (!summary) return;
+  summary.textContent = `${data.profile.name} · ${data.profile.ageMonths}개월`;
   const start = new Date();
   start.setHours(0, 0, 0, 0);
   start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
@@ -248,13 +244,18 @@ document.querySelector('[data-screen="home"] .topbar h1')?.addEventListener("cli
   else toast("초기화하지 못했어요");
 });
 
-document.getElementById("profileForm")?.addEventListener("submit", (event) => {
+document.getElementById("editProfile")?.addEventListener("click", () => {
+  const profile = loadData().profile;
+  openSheet(`<h2 class="title-md">아이 프로필 수정</h2><form id="profileForm"><div class="field"><label class="label" for="profileName">가명</label><input class="input" id="profileName" required maxlength="30" value="${esc(profile.name)}" /></div><div class="field"><label class="label" for="profileAge">개월 수</label><input class="input" id="profileAge" type="number" min="1" max="120" required value="${esc(profile.ageMonths)}" /></div><button class="btn btn-primary btn-block" type="submit">저장</button></form>`);
+});
+document.getElementById("sheetBody")?.addEventListener("submit", (event) => {
+  if (event.target.id !== "profileForm") return;
   event.preventDefault();
   const data = loadData();
   data.profile.name = document.getElementById("profileName").value.trim();
   data.profile.ageMonths = Number(document.getElementById("profileAge").value);
   if (!data.profile.name) return;
-  if (saveData(data)) { renderHome(); toast("프로필을 저장했어요"); }
+  if (saveData(data)) { closeSheet(); renderHome(); toast("프로필을 저장했어요"); }
   else toast("저장하지 못했어요");
 });
 
