@@ -97,7 +97,7 @@ window.KNOWLEDGE = [
     ],
     "explain": "관심이나 함께 노는 시간을 원했던 것이 가능성이 있는 이유예요. 깨문 뒤 어른의 관심이 집중되는 경험도 살펴봐 주세요.",
     "questions": [
-      "q-target"
+      "q-expression"
     ],
     "tip": "평소 긍정적인 상호작용을 하며 아이의 말과 감정에 관심을 주세요.",
     "redFlags": [

@@ -82,3 +82,26 @@ async function askAI(input, history = null, requestedMode = "fast") {
   return answer;
 }
 
+
+// 선택한 답변의 내부 가중치만으로 후보를 정렬한다. 메모·대상·장소만으로 원인을 추정하지 않는다.
+function scoreCauses(input = {}) {
+  const age = Number(input.ageMonths);
+  if (!Number.isInteger(age) || age < 24 || age > 47) return [];
+  return window.KNOWLEDGE.map((card, index) => {
+    let score = 0;
+    const reasons = [];
+    for (const question of window.QUESTIONS) {
+      const option = question.options.find((o) => o.value === input.answers?.[question.id]);
+      const weight = option?.scores?.[card.id.replace("cause-", "")] || 0;
+      if (weight > 0) { score += weight; reasons.push(`${question.title} → ${option.label}`); }
+    }
+    return { cardId: card.id, score, reasons, index };
+  }).filter((item) => item.score > 0).sort((a, b) => b.score - a.score || a.index - b.index).slice(0, 3);
+}
+// 증거가 있는 후보만 표시한다. 동점은 카드 순서로 정렬하되 가능성 차이를 주장하지 않는다.
+function createCauseAnswer(input) {
+  const candidates = scoreCauses(input).map(({ cardId, reasons }) => ({ cardId, why: reasons.join(" / ") }));
+  const answer = { type: "cause", candidates, causes: [], methods: [], level: "green", note: "가능성이 높은 원인 후보예요. 진단이 아니에요." };
+  Object.defineProperty(answer, "_meta", { value: { source: "rule", cards: candidates.map((c) => window.KNOWLEDGE.find((card) => card.id === c.cardId)), fallback: false, mode: "fast" } });
+  return answer;
+}

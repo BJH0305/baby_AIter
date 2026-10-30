@@ -47,7 +47,8 @@ function saveData(data) {
 // 위험 신호나 14일 이상 효과 없음 기록이 있으면 답변보다 규칙을 우선한다.
 function applySafety(answer, input, feedback = [], today = new Date()) {
   const text = `${input.text || ""} ${input.situation || ""}`;
-  const hasFlag = (window.KNOWLEDGE || []).some((card) => (card.redFlagKeywords || []).some((flag) => text.includes(flag)));
+  const dangerAnswer = (window.QUESTIONS || []).some((q) => q.options.some((o) => o.danger && input.answers?.[q.id] === o.value));
+  const hasFlag = dangerAnswer || (window.KNOWLEDGE || []).some((card) => (card.redFlagKeywords || []).some((flag) => text.includes(flag)));
   const dates = feedback.map((entry) => entry.date).filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date)).sort();
   const elapsed = dates.length ? (Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - Date.parse(`${dates[0]}T00:00:00Z`)) / 86400000 : 0;
   const noProgress = dates.length === feedback.length && dates.length > 0 && feedback.every((entry) => entry.result === "none") && elapsed >= 14;
@@ -106,7 +107,7 @@ document.getElementById("sheetBackdrop").addEventListener("click", closeSheet);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 function render() {
   const age = document.getElementById("askAge");
-  if (age) age.textContent = `아이 개월 수: ${getProfile().ageMonths}개월`;
+  if (age) age.textContent = `만 2~3세 대상 · 우리 아이 ${getProfile().ageMonths}개월`;
   document.getElementById("modeField").hidden = quizIndex < window.QUESTIONS.length || window.APP_CONFIG?.AI_MODE !== "live";
   renderHome();
   renderResult();
@@ -206,6 +207,7 @@ function renderResult() {
   const container = document.getElementById("resultContent");
   const consult = loadData().consults.find((item) => item.id === currentConsultId);
   if (!container || !consult) return;
+  if (consult.answer.type === "cause") { renderCauseResult(container, consult); return; }
   const labels = { green: "가정 지도", yellow: "관찰 필요", red: "전문가 상담 권장" };
   const answer = consult.answer;
   const cards = consult.cardIds.map((id) => window.KNOWLEDGE.find((card) => card.id === id)).filter(Boolean);
@@ -217,6 +219,18 @@ function renderResult() {
     <div class="section card"><h2 class="title-md">원인 해석</h2>${answer.causes.map((cause) => `<p>${esc(cause)}</p>`).join("")}</div>
     <div class="section"><h2 class="title-md">지도법</h2>${answer.methods.map((method) => `<div class="card"><h3 class="title-md">${esc(method.title)}</h3>${method.how !== method.title ? `<p>${esc(method.how)}</p>` : ""}<p class="muted">왜: ${esc(method.why)}</p><p class="muted">근거: ${esc(window.KNOWLEDGE.find((card) => card.id === method.cardId)?.title || method.cardId)}</p><button class="btn btn-secondary" data-try="${esc(method.id)}" ${consult.tried.includes(method.id) ? "disabled" : ""}>${consult.tried.includes(method.id) ? "선택했어요" : "해 볼게요"}</button></div>`).join("")}</div>
     <div class="section"><h2 class="title-md">근거 자료</h2>${cards.map((card) => `<div class="card"><h3 class="title-md">${esc(card.title)}</h3>${card.evidence ? `<blockquote>${esc(card.evidence)}</blockquote>` : ""}<p class="muted">${esc(card.source)} ${card.verified === false ? '<span class="badge">검수 중</span>' : ""}</p></div>`).join("")}</div>`;
+}
+
+// 원인 후보는 규칙이 정한 순서를 유지하고 선택 답변·원문 근거를 함께 보여 준다.
+function renderCauseResult(container, consult) {
+  const answer = applySafety(consult.answer, consult.input);
+  const safety = answer.level === "red" ? '<div class="section card" role="alert"><h2 class="title-md">전문가 상담 권장</h2><p>먼저 물린 사람의 안전과 상처를 확인해 주세요. 육아종합지원센터 또는 소아청소년과에 상담해 보세요.</p></div>' : "";
+  const sources = (text) => esc(text).replace(/https:\/\/[^\s;)]+/g, (url) => `<a href="${url}" target="_blank" rel="noopener noreferrer">원문 열기</a>`);
+  container.innerHTML = `${safety}<div class="section card"><h2 class="title-md">가능성이 높은 원인 후보예요. 진단이 아니에요.</h2><p>여러 이유가 겹칠 수 있어요. 답변과 연결되는 후보만 보여 드려요.</p><p class="muted">같은 점수의 후보 사이에는 가능성 차이를 뜻하는 순위가 없어요.</p><span class="badge">${consult.source === "ai" ? "AI 설명" : "기본 설명"}</span></div>` + (answer.candidates.length ? answer.candidates.map((candidate) => {
+    const card = window.KNOWLEDGE.find((c) => c.id === candidate.cardId);
+    if (!card) return "";
+    return `<article class="section card"><h2 class="title-md">${esc(card.title)}</h2><p>선택한 답변: ${esc(scoreCauses(consult.input).find((c) => c.cardId === card.id)?.reasons.join(" / ") || "[확인 필요]")}</p><p>왜 이렇게 봤나요: ${esc(candidate.why)}</p><p>${esc(card.explain)}</p><p>이럴 땐 이렇게: ${esc(card.tip)}</p><p class="muted source-text">출처: ${sources(card.source)}</p><p class="muted">쪽수: ${esc(card.page)}</p><blockquote>${esc(card.evidence)}</blockquote>${card.verified === false ? '<span class="badge">검수 중</span>' : ""}</article>`;
+  }).join("") : '<div class="section empty"><p>답변만으로 원인 후보를 좁히기 어려워요.</p><p>관찰 내용을 확인하고 다시 답해 주세요.</p></div>') + '<a class="btn btn-secondary btn-block" href="#ask">답변 다시 살펴보기</a>';
 }
 
 function refreshIcons() {
@@ -250,7 +264,7 @@ document.querySelector('[data-screen="home"] .topbar h1')?.addEventListener("cli
 
 document.getElementById("editProfile")?.addEventListener("click", () => {
   const profile = loadData().profile;
-  openSheet(`<h2 class="title-md">아이 프로필 수정</h2><form id="profileForm"><div class="field"><label class="label" for="profileName">가명</label><input class="input" id="profileName" required maxlength="30" value="${esc(profile.name)}" /></div><div class="field"><label class="label" for="profileAge">개월 수</label><input class="input" id="profileAge" type="number" min="1" max="120" required value="${esc(profile.ageMonths)}" /></div><button class="btn btn-primary btn-block" type="submit">저장</button></form>`);
+  openSheet(`<h2 class="title-md">아이 프로필 수정</h2><form id="profileForm"><div class="field"><label class="label" for="profileName">가명</label><input class="input" id="profileName" required maxlength="30" value="${esc(profile.name)}" /></div><div class="field"><label class="label" for="profileAge">개월 수</label><input class="input" id="profileAge" type="number" min="24" max="47" required value="${esc(profile.ageMonths)}" /></div><button class="btn btn-primary btn-block" type="submit">저장</button></form>`);
 });
 document.getElementById("sheetBody")?.addEventListener("submit", (event) => {
   if (event.target.id !== "profileForm") return;
@@ -277,12 +291,13 @@ document.getElementById("askForm")?.addEventListener("submit", async (event) => 
   const loading = document.getElementById("askLoading");
   if (quizIndex !== window.QUESTIONS.length || window.QUESTIONS.some((q) => !quizAnswers[q.id])) return;
   const input = getQuizInput();
+  if (!Number.isInteger(input.ageMonths) || input.ageMonths < 24 || input.ageMonths > 47) { toast("만 2~3세(24~47개월) 대상이에요. 프로필을 확인해 주세요"); return; }
   form.hidden = true;
   loading.hidden = false;
   try {
     const mode = document.querySelector("#modeChips .on")?.dataset.value || "fast";
     loading.querySelector("p").textContent = mode === "deep" ? "자료를 꼼꼼히 비교하고 있어요" : "분석하고 있어요";
-    const result = await askAI(input, null, mode);
+    const result = createCauseAnswer(input);
     pendingConsult = { input, answer: applySafety(result, input) };
     const data = loadData();
     const id = `c_${Date.now()}`;
@@ -291,7 +306,7 @@ document.getElementById("askForm")?.addEventListener("submit", async (event) => 
     if (!saveData(data)) throw new Error("저장 실패");
     currentConsultId = id;
     location.hash = "#result";
-    toast(result._meta.fallback ? "AI 연결이 느려 기본 답변을 보여 드려요" : "상담 결과를 저장했어요");
+    toast(result._meta.fallback ? "AI 연결이 느려 기본 답변을 보여 드려요" : "검사 결과를 저장했어요");
   } catch {
     toast("분석하지 못했어요. 다시 시도해 주세요");
   } finally {
