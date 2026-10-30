@@ -108,4 +108,4 @@
 → A/B 중 답해 주세요. 새 범위 변경과 이 질문 메모는 로컬에 보존하며 동기화 완료를 주장하지 않습니다.
 
   - 결정(사용자): A 승인. Claude의 SCOPE.md 팀 결정도 커밋에 포함. 화면은 개월 수로만, tips 배열에는 같은 근거 PDF의 대응과 줄별 쪽수를 기록.
-  - 메모(T22 후속): js/knowledge.js, js/app.js, js/ai.js, index.html, css/styles.css, docs/sources/cards.md / 7개 원인별 2~3개 대응·PDF 원문 대조·화면 및 안전 통합 검사 통과 / Pages 확인은 push 후 진행, 사람 카드 검수는 미완료 유지.
+  - 메모(T22 후속): js/knowledge.js, js/app.js, js/ai.js, index.html, css/styles.css, docs/sources/cards.md / 7개 원인별 2~3개 대응·PDF 원문 대조·화면 및 안전 통합 검사 통과 / Pages 확인 완료: 홈·질문 개월 수, 대응 목록·각 줄 쪽수, 375px 가로 넘침 없음·콘솔 오류 0; 사람 카드 검수는 미완료 유지.
