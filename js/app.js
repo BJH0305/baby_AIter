@@ -37,6 +37,15 @@ function loadData() {
 function saveData(data) {
   try { localStorage.setItem("babyaiter-v1", JSON.stringify(data)); return true; } catch { return false; }
 }
+// 위험 신호나 14일 이상 효과 없음 기록이 있으면 답변보다 규칙을 우선한다.
+function applySafety(answer, input, feedback = [], today = new Date()) {
+  const text = `${input.text || ""} ${input.situation || ""}`;
+  const hasFlag = (window.KNOWLEDGE || []).some((card) => card.redFlags.some((flag) => text.includes(flag)));
+  const dates = feedback.map((entry) => entry.date).filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date)).sort();
+  const elapsed = dates.length ? (Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - Date.parse(`${dates[0]}T00:00:00Z`)) / 86400000 : 0;
+  const noProgress = dates.length === feedback.length && dates.length > 0 && feedback.every((entry) => entry.result === "none") && elapsed >= 14;
+  return hasFlag || noProgress ? { ...answer, level: "red" } : answer;
+}
 function getProfile() {
   try { return JSON.parse(localStorage.getItem("babyaiter-v1"))?.profile || { name: "도윤", ageMonths: 38, hasSibling: true }; }
   catch { return { name: "도윤", ageMonths: 38, hasSibling: true }; }
@@ -177,7 +186,7 @@ async function reconsult(button) {
   const history = { previous: { input: previous.input, methods: previous.answer.methods.map(({ id, title }) => ({ id, title })) }, feedback };
   button.disabled = true;
   try {
-    const answer = await askAI(previous.input, history);
+    const answer = applySafety(await askAI(previous.input, history), previous.input, feedback);
     const id = `c_${Date.now()}`;
     data.consults.unshift({ id, createdAt: new Date().toISOString().slice(0, 10), round: 2, parentId: previous.id, input: previous.input, cardIds: [...new Set(answer.methods.map((method) => method.cardId))], answer, tried: [] });
     if (!saveData(data)) throw new Error("저장 실패");
@@ -226,7 +235,8 @@ function renderResult() {
   const previous = loadData().consults.find((item) => item.id === consult.parentId);
   const findMethod = (id) => answer.methods.find((method) => method.id === id)?.title || previous?.answer.methods.find((method) => method.id === id)?.title || id;
   const changes = answer.changes ? `<div class="section card"><h2 class="title-md">지난번과 달라진 점</h2>${answer.changes.kept.map((id) => `<p>유지: ${esc(findMethod(id))}</p>`).join("")}${answer.changes.replaced.map((item) => `<p>교체: ${esc(findMethod(item.from))} → ${esc(findMethod(item.to))}</p>`).join("")}</div>` : "";
-  container.innerHTML = `${changes}<div class="section"><span class="badge">${esc(labels[answer.level] || labels.green)}</span></div>
+  const safety = answer.level === "red" ? '<div class="section card"><h2 class="title-md">전문가 상담 권장</h2><p>육아종합지원센터 또는 소아청소년과에 상담해 보세요.</p></div>' : "";
+  container.innerHTML = `${changes}<div class="section"><span class="badge">${esc(labels[answer.level] || labels.green)}</span></div>${safety}
     <div class="section card"><h2 class="title-md">원인 해석</h2>${answer.causes.map((cause) => `<p>${esc(cause)}</p>`).join("")}</div>
     <div class="section"><h2 class="title-md">지도법</h2>${answer.methods.map((method) => `<div class="card"><h3 class="title-md">${esc(method.title)}</h3><p>${esc(method.how)}</p><button class="btn btn-secondary" data-try="${esc(method.id)}" ${consult.tried.includes(method.id) ? "disabled" : ""}>${consult.tried.includes(method.id) ? "선택했어요" : "해 볼게요"}</button></div>`).join("")}</div>
     <div class="section"><h2 class="title-md">근거 자료</h2>${cards.map((card) => `<div class="card"><h3 class="title-md">${esc(card.title)}</h3><p>${esc(card.source)}</p></div>`).join("")}</div>`;
@@ -333,7 +343,7 @@ document.getElementById("askForm")?.addEventListener("submit", async (event) => 
   form.hidden = true;
   loading.hidden = false;
   try {
-    pendingConsult = { input, answer: await askAI(input) };
+    pendingConsult = { input, answer: applySafety(await askAI(input), input) };
     const data = loadData();
     const id = `c_${Date.now()}`;
     const cardIds = [...new Set(pendingConsult.answer.methods.map((method) => method.cardId))];
