@@ -9,3 +9,5 @@ node_modules/
 .wrangler/
 .DS_Store
 Thumbs.db
+# 원문 자료(PDF)는 로컬에만 둔다 — 용량·재배포 문제. 목록은 docs/sources/README.md
+docs/sources/raw/
