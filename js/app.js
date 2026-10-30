@@ -107,7 +107,7 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&
 function render() {
   const age = document.getElementById("askAge");
   if (age) age.textContent = `아이 개월 수: ${getProfile().ageMonths}개월`;
-  document.getElementById("modeField").hidden = window.APP_CONFIG?.AI_MODE !== "live";
+  document.getElementById("modeField").hidden = quizIndex < window.QUESTIONS.length || window.APP_CONFIG?.AI_MODE !== "live";
   renderHome();
   renderResult();
   renderLog();
@@ -275,12 +275,8 @@ document.getElementById("askForm")?.addEventListener("submit", async (event) => 
   event.preventDefault();
   const form = event.currentTarget;
   const loading = document.getElementById("askLoading");
-  const input = {
-    target: document.querySelector("#targetChips .on").dataset.value,
-    situation: document.querySelector("#situationChips .on").dataset.value,
-    text: document.getElementById("askText").value.trim(),
-    ageMonths: getProfile().ageMonths
-  };
+  if (quizIndex !== window.QUESTIONS.length || window.QUESTIONS.some((q) => !quizAnswers[q.id])) return;
+  const input = getQuizInput();
   form.hidden = true;
   loading.hidden = false;
   try {
@@ -303,5 +299,35 @@ document.getElementById("askForm")?.addEventListener("submit", async (event) => 
     loading.hidden = true;
   }
 });
+
+// 질문 답변은 뒤로 가도 유지하며 미응답 상태에서는 진행하지 않는다.
+let quizIndex = 0;
+const quizAnswers = {};
+function getQuizInput() {
+  const selected = (id) => window.QUESTIONS.find((q) => q.id === id)?.options.find((o) => o.value === quizAnswers[id])?.label || "";
+  return { answers: { ...quizAnswers }, target: selected("q-target"), situation: selected("q-situation"), text: document.getElementById("askText").value.trim(), ageMonths: getProfile().ageMonths };
+}
+function renderQuiz() {
+  const questions = window.QUESTIONS, question = questions[quizIndex], done = !question;
+  document.getElementById("questionContent").innerHTML = `<p class="section">${done ? questions.length : quizIndex + 1} / ${questions.length}</p><div class="progress" role="progressbar" aria-label="질문 진행" aria-valuemin="0" aria-valuemax="${questions.length}" aria-valuenow="${quizIndex}"><i style="width:calc(100% * ${quizIndex} / ${questions.length})"></i></div>` + (done ? '<h2 class="title-md section">질문에 모두 답했어요</h2><p>덧붙일 내용이 있으면 메모해 주세요.</p>' : `<h2 class="title-md section" id="questionTitle">${esc(question.title)}</h2>${question.help ? `<p class="muted section">${esc(question.help)}</p>` : ""}<div role="group" aria-labelledby="questionTitle">${question.options.map((o) => `<div class="field"><button type="button" class="btn ${quizAnswers[question.id] === o.value ? "btn-primary" : "btn-secondary"} btn-block" data-answer="${o.value}" aria-pressed="${quizAnswers[question.id] === o.value}">${esc(o.label)}</button></div>`).join("")}</div>`);
+  document.getElementById("quizBack").hidden = quizIndex === 0;
+  document.getElementById("quizNext").hidden = done;
+  document.getElementById("quizNext").disabled = !done && !quizAnswers[question.id];
+  document.getElementById("quizSubmit").hidden = !done;
+  document.getElementById("quizNote").hidden = !done;
+  document.getElementById("modeField").hidden = !done || window.APP_CONFIG?.AI_MODE !== "live";
+}
+document.getElementById("questionContent").addEventListener("click", (e) => {
+  const option = e.target.closest("[data-answer]");
+  if (!option) return;
+  quizAnswers[window.QUESTIONS[quizIndex].id] = option.dataset.answer;
+  renderQuiz();
+});
+document.getElementById("quizNext").addEventListener("click", () => {
+  if (!quizAnswers[window.QUESTIONS[quizIndex]?.id]) return;
+  quizIndex += 1; renderQuiz();
+});
+document.getElementById("quizBack").addEventListener("click", () => { quizIndex = Math.max(0, quizIndex - 1); renderQuiz(); });
+renderQuiz();
 
 showScreen(location.hash.slice(1) || "home");

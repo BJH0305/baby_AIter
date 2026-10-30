@@ -22,15 +22,16 @@
       </main>
     </section>
     <section class="screen" data-screen="ask" hidden>
-      <header class="topbar"><h1>상담하기</h1></header>
+      <header class="topbar"><h1>깨물기 상황 질문</h1></header>
       <main class="content">
         <form id="askForm">
-          <div class="field"><span class="label">대상</span><div class="chips" id="targetChips"><button type="button" class="chip on" data-value="친구">친구</button><button type="button" class="chip" data-value="동생">동생</button></div></div>
-          <div class="field"><span class="label">상황</span><div class="chips" id="situationChips"><button type="button" class="chip on" data-value="장난감 다툼">장난감 다툼</button><button type="button" class="chip" data-value="동생을 안고 있을 때">동생을 안고 있을 때</button><button type="button" class="chip" data-value="피곤·졸릴 때">피곤·졸릴 때</button><button type="button" class="chip" data-value="흥분했을 때">흥분했을 때</button><button type="button" class="chip" data-value="이유 모름">이유 모름</button></div></div>
-          <div class="field"><label class="label" for="askText">상황 설명</label><textarea class="textarea" id="askText" placeholder="상황을 짧게 적어 주세요"></textarea></div>
           <p class="muted section" id="askAge"></p>
-          <div class="field" id="modeField"><span class="label">답변 방식</span><div class="chips" id="modeChips"><button type="button" class="chip on" data-value="fast" aria-pressed="true">빠른 답변</button><button type="button" class="chip" data-value="deep" aria-pressed="false">깊게 생각하기</button></div></div>
-          <button class="btn btn-primary btn-block" type="submit">분석하기</button>
+          <div id="questionContent" aria-live="polite"></div>
+          <div class="field" id="quizNote" hidden><label class="label" for="askText">추가 메모 (선택)</label><input class="input" id="askText" maxlength="300" placeholder="시간과 직전 상황 등을 한 줄로 적어 주세요" /></div>
+          <div class="field" id="modeField" hidden><span class="label">답변 방식</span><div class="chips" id="modeChips"><button type="button" class="chip on" data-value="fast" aria-pressed="true">빠른 답변</button><button type="button" class="chip" data-value="deep" aria-pressed="false">깊게 생각하기</button></div></div>
+          <div class="section"><button class="btn btn-secondary" id="quizBack" type="button" hidden>이전 질문</button></div>
+          <button class="btn btn-primary btn-block" id="quizNext" type="button" disabled>다음</button>
+          <button class="btn btn-primary btn-block" id="quizSubmit" type="submit" hidden>원인 후보 보기</button>
         </form>
         <div id="askLoading" hidden aria-live="polite"><p>분석하고 있어요</p><div class="skeleton" style="height:80px"></div></div>
       </main>
@@ -55,6 +56,7 @@
   <script src="js/knowledge.js"></script>
   <script src="js/mock.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/questions.js"></script>
   <script src="js/ai.js"></script>
   <script src="js/app.js"></script>
 </body>
